@@ -1,4 +1,5 @@
 **/*.o
 **/*.lo
+dddmp/exp
 cudd/.libs/
 cudd/libcudd.la

@@ -247,16 +247,16 @@ void Simulator::nodecount()
 ***********************************************************************/
 void Simulator::print_info(double runtime, size_t memPeak)
 {
-    std::cout << "  Simulation time: " << runtime << " seconds" << std::endl;
-    std::cout << "  Peak emory usage: " << memPeak << " bytes" << std::endl; //unit in bytes
+    std::cout << "  Runtime: " << runtime << " seconds" << std::endl;
+    std::cout << "  Peak memory usage: " << memPeak << " bytes" << std::endl; //unit in bytes
     std::cout << "  #Applied gates: " << gatecount << std::endl;
     std::cout << "  Max #nodes: " << NodeCount << std::endl;
     std::cout << "  Precision of integers: " << r << std::endl;
-    std::cout << "  #Integers: " << w << std::endl;
     std::cout << "  Accuracy loss: " << error << std::endl;
+    std::cout << "  #Integers: " << w << std::endl;
     
-    std::unordered_map<std::string, int>::iterator it;
-    std::cout << "  Measurement: " << std::endl;
-    for(it = state_count.begin(); it != state_count.end(); it++)
-        std::cout << "      " << it->first << ": " << it->second << std::endl;
+    // std::unordered_map<std::string, int>::iterator it;
+    // std::cout << "  Measurement: " << std::endl;
+    // for(it = state_count.begin(); it != state_count.end(); it++)
+    //     std::cout << "      " << it->first << ": " << it->second << std::endl;
 }

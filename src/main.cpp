@@ -10,7 +10,7 @@ int main(int argc, char **argv)
     ("help", "produce help message")
     ("sim_qasm", po::value<std::string>()->implicit_value(""), "simulate qasm file string")
     ("seed", po::value<unsigned int>()->implicit_value(1), "seed for random number generator")
-    ("print_info", "print the simulation infomation such as runtime, memory, etc.")
+    ("print_info", "print simulation statistics such as runtime, memory, etc.")
     ("type", po::value<unsigned int>()->default_value(0), "the simulation type being executed.\n" 
                                                            "0: weak simulation (default option) where the sampled outcome(s) will be provided after the simulation. " 
                                                            "The number of outcomes being sampled can be set by argument \"shots\" (1 by default).\n"

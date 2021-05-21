@@ -253,7 +253,7 @@ void Simulator::print_info(double runtime, size_t memPeak)
     std::cout << "  Max #nodes: " << NodeCount << std::endl;
     std::cout << "  Precision of integers: " << r << std::endl;
     std::cout << "  Accuracy loss: " << error << std::endl;
-    std::cout << "  #Integers: " << w << std::endl;
+    // std::cout << "  #Integers: " << w << std::endl;
     
     // std::unordered_map<std::string, int>::iterator it;
     // std::cout << "  Measurement: " << std::endl;

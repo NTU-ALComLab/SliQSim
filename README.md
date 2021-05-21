@@ -42,17 +42,17 @@ Options:
 ```
 For example, simulating [example/bell_state_measure.qasm](https://github.com/NTU-ALComLab/SliQSim/blob/master/examples/bell_state_measure.qasm), which is a 2-qubit bell state circuit with measurement gates at the end, with the weak simulation option can be executed by
 ```commandline
-./SliQSim --sim_qasm examples/bell_state_measure.qasm --type 0 --shots 5
+./SliQSim --sim_qasm examples/bell_state_measure.qasm --type 0 --shots 1024
 ```
 
 Then the sampled results will be shown:
 ```commandline
-{ "counts": { "11": 2, "00": 3 } }
+{ "counts": { "11": 542, "00": 482 } }
 ```
 
 If option `--print_info` is used, simulation statistics such as runtime and memory usage will also be provided: 
 ```commandline
-  Runtime: 0.010784 seconds
+  Runtime: 0.014433 seconds
   Peak memory usage: 12611584 bytes
   #Applied gates: 2
   Max #nodes: 13

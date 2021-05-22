@@ -34,8 +34,8 @@ public:
     }
 
     /* gates */
-    void Toffoli(int targ, int *cont, int n_cont, int *ncont, int n_ncont);
-    void Fredkin(int swapA , int swapB, int *cont, int n_cont);
+    void Toffoli(int targ, std::vector<int> &cont, std::vector<int> &ncont);
+    void Fredkin(int swapA , int swapB, std::vector<int> &cont);
     void Peres(int a, int b, int c);
     void Peres_i(int a, int b, int c);
     void Hadamard(int iqubit);

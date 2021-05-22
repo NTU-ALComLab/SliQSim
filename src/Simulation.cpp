@@ -129,7 +129,8 @@ void Simulator::sim_qasm_file(std::string qasm)
                 }
                 else if (inStr == "cx")
                 {
-                    int *cont = new int[1];
+                    std::vector<int> cont(1);
+                    std::vector<int> ncont(0);
                     int targ;
                     getline(inStr_ss, inStr, '[');
                     getline(inStr_ss, inStr, ']');
@@ -137,8 +138,9 @@ void Simulator::sim_qasm_file(std::string qasm)
                     getline(inStr_ss, inStr, '[');
                     getline(inStr_ss, inStr, ']');
                     targ = stoi(inStr);
-                    Toffoli(targ, cont, 1, NULL, 0);
-                    delete[] cont;
+                    Toffoli(targ, cont, ncont);
+                    cont.clear();
+                    ncont.clear();
                 }
                 else if (inStr == "cz")
                 {
@@ -152,25 +154,24 @@ void Simulator::sim_qasm_file(std::string qasm)
                     PauliZ(iqubit, 2);
                     delete[] iqubit;
                 }
-                else if (inStr == "ccx")
+                else if (inStr == "swap")
                 {
-                    int *cont = new int[2];
-                    int targ;
+                    std::vector<int> cont(0);
                     for (i = 0; i < 2; i++)
                     {
                         getline(inStr_ss, inStr, '[');
                         getline(inStr_ss, inStr, ']');
-                        cont[i] = stoi(inStr);
+                        if (i == 0)
+                            swapA = stoi(inStr);
+                        else
+                            swapB = stoi(inStr);
                     }
-                    getline(inStr_ss, inStr, '[');
-                    getline(inStr_ss, inStr, ']');
-                    targ = stoi(inStr);
-                    Toffoli(targ, cont, 2, NULL, 0);
-                    delete[] cont;
+                    Fredkin(swapA, swapB, cont);
+                    cont.clear();
                 }
                 else if (inStr == "cswap")
                 {
-                    int *cont = new int[1];
+                    std::vector<int> cont(1);
                     for (i = 0; i < 3; i++)
                     {
                         getline(inStr_ss, inStr, '[');
@@ -182,8 +183,25 @@ void Simulator::sim_qasm_file(std::string qasm)
                         else
                             swapB = stoi(inStr);
                     }
-                    Fredkin(swapA, swapB, cont, 1);
-                    delete[] cont;
+                    Fredkin(swapA, swapB, cont);
+                    cont.clear();
+                }
+                else if (inStr == "ccx" || inStr == "mcx")
+                {
+                    std::vector<int> cont(0);
+                    std::vector<int> ncont(0);
+                    int targ;
+                    getline(inStr_ss, inStr, '[');
+                    while(getline(inStr_ss, inStr, ']'))
+                    {
+                        cont.push_back(stoi(inStr));
+                        getline(inStr_ss, inStr, '[');
+                    }
+                    targ = cont.back();
+                    cont.pop_back();
+                    Toffoli(targ, cont, ncont);
+                    cont.clear();
+                    ncont.clear();
                 }
                 else
                 {

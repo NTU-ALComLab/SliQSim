@@ -2,15 +2,15 @@
 #include "util_sim.h"
 
 
-void Simulator::Toffoli(int targ, int *cont, int n_cont, int *ncont, int n_ncont)
+void Simulator::Toffoli(int targ, std::vector<int> &cont, std::vector<int> &ncont)
 {
-    assert((n_cont + n_ncont) < n);
+    assert((cont.size() + ncont.size()) < n);
     int IsBadtarg = 0;
-    int cont_tot = n_cont + n_ncont;
+    int cont_tot = cont.size() + ncont.size();
     int i, j, h;
     for (i = 0; i < cont_tot; i++)
     {
-        if (i < n_cont)
+        if (i < cont.size())
         {
             if (targ == cont[i])
             {
@@ -20,7 +20,7 @@ void Simulator::Toffoli(int targ, int *cont, int n_cont, int *ncont, int n_ncont
         }
         else
         {
-            if (targ == ncont[i - n_cont])
+            if (targ == ncont[i - cont.size()])
             {
                 IsBadtarg = 1;
                 break;
@@ -33,14 +33,14 @@ void Simulator::Toffoli(int targ, int *cont, int n_cont, int *ncont, int n_ncont
 
     g = Cudd_ReadOne(manager);
     Cudd_Ref(g);
-    for (h = n_cont - 1; h >= 0; h--)
+    for (h = cont.size() - 1; h >= 0; h--)
     {
         tmp = Cudd_bddAnd(manager, Cudd_bddIthVar(manager, cont[h]), g);
         Cudd_Ref(tmp);
         Cudd_RecursiveDeref(manager, g);
         g = tmp;
     }
-    for (h = n_ncont - 1; h >= 0; h--)
+    for (h = ncont.size() - 1; h >= 0; h--)
     {
         tmp = Cudd_bddAnd(manager, Cudd_Not(Cudd_bddIthVar(manager, ncont[h])), g);
         Cudd_Ref(tmp);
@@ -118,12 +118,12 @@ void Simulator::Toffoli(int targ, int *cont, int n_cont, int *ncont, int n_ncont
     Cudd_RecursiveDeref(manager, g);
 }
 
-void Simulator::Fredkin(int swapA, int swapB, int *cont, int n_cont)
+void Simulator::Fredkin(int swapA , int swapB, std::vector<int> &cont)
 {
-    assert(n_cont < n);
+    assert(cont.size() < n);
     int IsBadtarg = 0;
     int i, j, h;
-    for (i = 0; i < n_cont; i++)
+    for (i = 0; i < cont.size(); i++)
     {
         if ((swapA == cont[i]) || (swapB == cont[i]))
         {
@@ -137,7 +137,7 @@ void Simulator::Fredkin(int swapA, int swapB, int *cont, int n_cont)
 
     g = Cudd_ReadOne(manager);
     Cudd_Ref(g);
-    for (h = n_cont - 1; h >= 0; h--)
+    for (h = cont.size() - 1; h >= 0; h--)
     {
         tmp = Cudd_bddAnd(manager, Cudd_bddIthVar(manager, cont[h]), g);
         Cudd_Ref(tmp);
@@ -242,24 +242,32 @@ void Simulator::Fredkin(int swapA, int swapB, int *cont, int n_cont)
 
 void Simulator::Peres(int a, int b, int c)
 {
-    int cont1[2];
+    std::vector<int> ncont(0);
+    std::vector<int> cont1(2);
     cont1[0] = b;
     cont1[1] = c;
-    Toffoli(a, cont1, 2, NULL, 0);
-    int cont2[1];
+    Toffoli(a, cont1, ncont);
+    cont1.clear();
+    std::vector<int> cont2(1);
     cont2[0] = c;
-    Toffoli(b, cont2, 1, NULL, 0);
+    Toffoli(b, cont2, ncont);
+    cont2.clear();
+    ncont.clear();
 }
 
 void Simulator::Peres_i(int a, int b, int c)
 {
-    int cont2[1];
+    std::vector<int> ncont(0);
+    std::vector<int> cont2(1);
     cont2[0] = c;
-    Toffoli(b, cont2, 1, NULL, 0);
-    int cont1[2];
+    Toffoli(b, cont2, ncont);
+    cont2.clear();
+    std::vector<int> cont1(2);
     cont1[0] = b;
     cont1[1] = c;
-    Toffoli(a, cont1, 2, NULL, 0);
+    Toffoli(a, cont1, ncont);
+    cont1.clear();
+    ncont.clear();
 }
 
 void Simulator::Hadamard(int iqubit)

@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     po::store(po::parse_command_line(argc, argv, description), vm);
     po::notify(vm);
 
-    if (vm.count("help")) 
+    if (vm.count("help") || argc == 1) 
     {
 	    std::cout << description << std::endl;
 	    return 1;

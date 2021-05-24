@@ -70,7 +70,7 @@ This will show the resulting state vector:
 { "counts": { "00": 1 }, "statevector": ["0.707107", "0", "0", "0.707107"] }
 ```
 
-One may also execute our simulator as a backend option of Qiskit through [Qiskit SliQSim Provider](https://github.com/NTU-ALComLab/qiskit-sliqsim-provider).
+One may also execute our simulator as a backend option of Qiskit through [SliQSim Qiskit Interface](https://github.com/NTU-ALComLab/SliQSim-Qiskit-Interface).
 
 
 ## Citation

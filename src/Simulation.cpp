@@ -99,7 +99,7 @@ void Simulator::sim_qasm_file(std::string qasm)
                     getline(inStr_ss, inStr, '[');
                     getline(inStr_ss, inStr, ']');
                     int iqubit = stoi(inStr);
-                    Phase_shift(-2, &iqubit, 1);
+                    Phase_shift_dagger(-2, &iqubit, 1);
                 }
                 else if (inStr == "t")
                 {
@@ -113,7 +113,7 @@ void Simulator::sim_qasm_file(std::string qasm)
                     getline(inStr_ss, inStr, '[');
                     getline(inStr_ss, inStr, ']');
                     int iqubit = stoi(inStr);
-                    Phase_shift(-4, &iqubit, 1);
+                    Phase_shift_dagger(-4, &iqubit, 1);
                 }
                 else if (inStr == "rx(pi/2)")
                 {

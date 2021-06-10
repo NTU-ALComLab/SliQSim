@@ -294,7 +294,7 @@ void Simulator::Hadamard(int iqubit)
             //g
             g = Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
             Cudd_Ref(g);
-            //h
+            //d
             term1 = Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_bddIthVar(manager, iqubit));
             Cudd_Ref(term1);
             tmp = Cudd_bddAnd(manager, term1, Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
@@ -384,7 +384,7 @@ void Simulator::Hadamard(int iqubit)
 //             //g
 //             g = Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
 //             Cudd_Ref(g);
-//             //h
+//             //d
 //             h = Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_bddIthVar(manager, iqubit));
 //             Cudd_Ref(h);
 
@@ -601,7 +601,7 @@ void Simulator::Hadamard(int iqubit)
 //             //g
 //             g = Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
 //             Cudd_Ref(g);
-//             //h
+//             //d
 //             term1 = Cudd_bddAnd(manager, All_Bdd[i][j], Cudd_bddIthVar(manager, iqubit));
 //             Cudd_Ref(term1);
 //             term2 = Cudd_Not(Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_bddIthVar(manager, iqubit)));
@@ -779,7 +779,7 @@ void Simulator::rx_pi_2(int iqubit)
         {
             if (i < nshift)
             {
-                //h
+                //d
                 term1 = Cudd_Cofactor(manager, copy[i + nshift][j], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
                 Cudd_Ref(term1);
                 tmp = Cudd_bddAnd(manager, term1, Cudd_bddIthVar(manager, iqubit));
@@ -799,7 +799,7 @@ void Simulator::rx_pi_2(int iqubit)
             }
             else
             {
-                //h
+                //d
                 term1 = Cudd_Cofactor(manager, copy[i - nshift][j], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
                 Cudd_Ref(term1);
                 tmp = Cudd_bddAnd(manager, term1, Cudd_bddIthVar(manager, iqubit));
@@ -891,7 +891,7 @@ void Simulator::ry_pi_2(int iqubit)
             //g
             g = Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
             Cudd_Ref(g);
-            //h
+            //d
             term1 = Cudd_bddAnd(manager, All_Bdd[i][j], Cudd_bddIthVar(manager, iqubit));
             Cudd_Ref(term1);
             term2 = Cudd_Not(Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_bddIthVar(manager, iqubit)));

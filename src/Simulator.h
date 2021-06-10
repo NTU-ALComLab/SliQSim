@@ -39,8 +39,8 @@ public:
     void Peres(int a, int b, int c);
     void Peres_i(int a, int b, int c);
     void Hadamard(int iqubit);
-    // void X_1_2(int iqubit); // have not been modified for modified algebraic
-    // void Y_1_2(int iqubit); // have not been modified for modified algebraic
+    // void X_1_2(int iqubit); // has not been modified for modified algebraic
+    // void Y_1_2(int iqubit); // has not been modified for modified algebraic
     void rx_pi_2(int iqubit); 
     void ry_pi_2(int iqubit);
     void Phase_shift(int phase, int *iqubit, int napplied); // phase can only be the power of 2
@@ -93,7 +93,6 @@ private:
     unsigned long gatecount;
     unsigned long NodeCount;
     double error;
-    struct timeval t1, t2;
 
     // Clean up Simulator
     void clear() {

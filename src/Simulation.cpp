@@ -4,6 +4,33 @@
 
 /**Function*************************************************************
 
+  Synopsis    [Initailize simulator]
+
+  Description [This function will set #qubits n, construct initial state, and enable dynamic reordering]
+
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+void Simulator::init_simulator(int nQubits)
+{
+    n = nQubits; // set the number n here
+    manager = Cudd_Init(n, n, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0);
+    int *constants = new int[n];
+    for (int i = 0; i < n; i++)
+        constants[i] = 0; // TODO: costom initial state
+    measured_qubits_to_clbits = new int[n];
+    for (int i = 0; i < n; i++)
+        measured_qubits_to_clbits[i] = -1;
+    init_state(constants);
+    delete[] constants;
+    Cudd_AutodynEnable(manager, CUDD_REORDER_SYMM_SIFT);
+}
+
+
+/**Function*************************************************************
+
   Synopsis    [parse and simulate the qasm file]
 
   Description []
@@ -15,9 +42,7 @@
 ***********************************************************************/
 void Simulator::sim_qasm_file(std::string qasm)
 {
-    int i;
     std::string inStr;
-    int targ, swapA, swapB;
     std::stringstream inFile_ss(qasm);
     while (getline(inFile_ss, inStr))
     {
@@ -30,18 +55,7 @@ void Simulator::sim_qasm_file(std::string qasm)
             {
                 getline(inStr_ss, inStr, '[');
                 getline(inStr_ss, inStr, ']');
-                n = stoi(inStr); // get the number n here
-                manager = Cudd_Init(n, n, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0);
-                int *constants = new int[n];
-                for (i = 0; i < n; i++)
-                    constants[i] = 0; // TODO: costom initial state
-                measured_qubits_to_clbits = new int[n];
-                for (i = 0; i < n; i++)
-                    measured_qubits_to_clbits[i] = -1;
-                init_state(constants);
-                delete[] constants;
-                Cudd_AutodynEnable(manager, CUDD_REORDER_SYMM_SIFT);
-                getline(inStr_ss, inStr, '\n');
+                init_simulator(stoi(inStr));
             }
             else if (inStr == "creg"){;}
             else if (inStr == "OPENQASM"){;}
@@ -55,8 +69,7 @@ void Simulator::sim_qasm_file(std::string qasm)
                 getline(inStr_ss, inStr, '[');
                 getline(inStr_ss, inStr, ']');
                 int cIndex = stoi(inStr);
-                measured_qubits.push_back(qIndex);
-                measured_qubits_to_clbits[qIndex] = cIndex;
+                measure(qIndex, cIndex);
             }
             else
             {
@@ -74,12 +87,12 @@ void Simulator::sim_qasm_file(std::string qasm)
                 }
                 else if (inStr == "z")
                 {
-                    int *iqubit = new int[1];
+                    std::vector<int> iqubit(1);
                     getline(inStr_ss, inStr, '[');
                     getline(inStr_ss, inStr, ']');
                     iqubit[0] = stoi(inStr);
-                    PauliZ(iqubit, 1);
-                    delete[] iqubit;
+                    PauliZ(iqubit);
+                    iqubit.clear();
                 }
                 else if (inStr == "h")
                 {
@@ -92,28 +105,28 @@ void Simulator::sim_qasm_file(std::string qasm)
                     getline(inStr_ss, inStr, '[');
                     getline(inStr_ss, inStr, ']');
                     int iqubit = stoi(inStr);
-                    Phase_shift(2, &iqubit, 1);
+                    Phase_shift(2, iqubit);
                 }
                 else if (inStr == "sdg")
                 {
                     getline(inStr_ss, inStr, '[');
                     getline(inStr_ss, inStr, ']');
                     int iqubit = stoi(inStr);
-                    Phase_shift_dagger(-2, &iqubit, 1);
+                    Phase_shift_dagger(-2, iqubit);
                 }
                 else if (inStr == "t")
                 {
                     getline(inStr_ss, inStr, '[');
                     getline(inStr_ss, inStr, ']');
                     int iqubit = stoi(inStr);
-                    Phase_shift(4, &iqubit, 1);
+                    Phase_shift(4, iqubit);
                 }
                 else if (inStr == "tdg")
                 {
                     getline(inStr_ss, inStr, '[');
                     getline(inStr_ss, inStr, ']');
                     int iqubit = stoi(inStr);
-                    Phase_shift_dagger(-4, &iqubit, 1);
+                    Phase_shift_dagger(-4, iqubit);
                 }
                 else if (inStr == "rx(pi/2)")
                 {
@@ -144,20 +157,21 @@ void Simulator::sim_qasm_file(std::string qasm)
                 }
                 else if (inStr == "cz")
                 {
-                    int *iqubit = new int[2];
-                    for (i = 0; i < 2; i++)
+                    std::vector<int> iqubit(2);
+                    for (int i = 0; i < 2; i++)
                     {
                         getline(inStr_ss, inStr, '[');
                         getline(inStr_ss, inStr, ']');
                         iqubit[i] = stoi(inStr);
                     }
-                    PauliZ(iqubit, 2);
-                    delete[] iqubit;
+                    PauliZ(iqubit);
+                    iqubit.clear();
                 }
                 else if (inStr == "swap")
                 {
+                    int swapA, swapB;
                     std::vector<int> cont(0);
-                    for (i = 0; i < 2; i++)
+                    for (int i = 0; i < 2; i++)
                     {
                         getline(inStr_ss, inStr, '[');
                         getline(inStr_ss, inStr, ']');
@@ -171,8 +185,9 @@ void Simulator::sim_qasm_file(std::string qasm)
                 }
                 else if (inStr == "cswap")
                 {
+                    int swapA, swapB;
                     std::vector<int> cont(1);
-                    for (i = 0; i < 3; i++)
+                    for (int i = 0; i < 3; i++)
                     {
                         getline(inStr_ss, inStr, '[');
                         getline(inStr_ss, inStr, ']');
@@ -205,14 +220,10 @@ void Simulator::sim_qasm_file(std::string qasm)
                 }
                 else
                 {
-                    gatecount--;
                     std::cerr << std::endl
                             // << "[warning]: Gate \'" << inStr << "\' is not supported in this simulator. The gate is ignored ..." << std::endl;
                             << "[warning]: Syntax \'" << inStr << "\' is not supported in this simulator. The line is ignored ..." << std::endl;
                 }
-                gatecount++;
-                if (manager != NULL)
-                    nodecount();
             }
         }
     }
@@ -232,8 +243,6 @@ void Simulator::sim_qasm_file(std::string qasm)
 ***********************************************************************/
 void Simulator::sim_qasm(std::string qasm)
 {
-    int i;
-    std::unordered_map<std::string, int>::iterator it;
     sim_qasm_file(qasm); // simulate
 
     // measure based on simulator type
@@ -242,20 +251,19 @@ void Simulator::sim_qasm(std::string qasm)
         if (isMeasure == 0)
         {
             std::string noMeasureBasis;
-            for (i = 0; i < n; i++)
+            for (int i = 0; i < n; i++)
                 noMeasureBasis += '0';
             state_count[noMeasureBasis] = shots;
         }
         else
             measurement();
-        statevector = "null";
     }
     else if (sim_type == 1) // strong
     {
         if (isMeasure == 0)
         {
             std::string noMeasureBasis;
-            for (i = 0; i < n; i++)
+            for (int i = 0; i < n; i++)
                 noMeasureBasis += '0';
             state_count[noMeasureBasis] = 1;
         }
@@ -263,16 +271,36 @@ void Simulator::sim_qasm(std::string qasm)
             measurement();
         getStatevector();
     }
+    print_results();
+}
 
+
+
+/**Function*************************************************************
+
+  Synopsis    [print state vector and distribution of sampled outcomes]
+
+  Description []
+
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+void Simulator::print_results()
+{
     // write output string based on state_count and statevector
+    std::unordered_map<std::string, int>::iterator it;
+
     run_output = "{ \"counts\": { ";
     for (it = state_count.begin(); it != state_count.end(); it++)
     {
         if (std::next(it) == state_count.end())
-            run_output = run_output + "\"" + it->first + "\": " + std::to_string(it->second) + " }";
+            run_output = run_output + "\"" + it->first + "\": " + std::to_string(it->second);
         else
             run_output = run_output + "\"" + it->first + "\": " + std::to_string(it->second) + ", ";
     }
+    run_output = run_output + " }";
     run_output += (statevector != "null") ? ", \"statevector\": " + statevector + " }" : " }";
 
     std::cout << run_output << std::endl;

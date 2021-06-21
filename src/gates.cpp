@@ -2,13 +2,12 @@
 #include "util_sim.h"
 
 
-void Simulator::Toffoli(int targ, std::vector<int> &cont, std::vector<int> &ncont)
+void Simulator::Toffoli(int targ, std::vector<int> cont, std::vector<int> ncont)
 {
     assert((cont.size() + ncont.size()) < n);
     int IsBadtarg = 0;
     int cont_tot = cont.size() + ncont.size();
-    int i, j, h;
-    for (i = 0; i < cont_tot; i++)
+    for (int i = 0; i < cont_tot; i++)
     {
         if (i < cont.size())
         {
@@ -33,14 +32,14 @@ void Simulator::Toffoli(int targ, std::vector<int> &cont, std::vector<int> &ncon
 
     g = Cudd_ReadOne(manager);
     Cudd_Ref(g);
-    for (h = cont.size() - 1; h >= 0; h--)
+    for (int h = cont.size() - 1; h >= 0; h--)
     {
         tmp = Cudd_bddAnd(manager, Cudd_bddIthVar(manager, cont[h]), g);
         Cudd_Ref(tmp);
         Cudd_RecursiveDeref(manager, g);
         g = tmp;
     }
-    for (h = ncont.size() - 1; h >= 0; h--)
+    for (int h = ncont.size() - 1; h >= 0; h--)
     {
         tmp = Cudd_bddAnd(manager, Cudd_Not(Cudd_bddIthVar(manager, ncont[h])), g);
         Cudd_Ref(tmp);
@@ -48,9 +47,9 @@ void Simulator::Toffoli(int targ, std::vector<int> &cont, std::vector<int> &ncon
         g = tmp;
     }
 
-    for (i = 0; i < w; i++) // F = All_Bdd[i][j]
+    for (int i = 0; i < w; i++) // F = All_Bdd[i][j]
     {
-        for (j = 0; j < r; j++)
+        for (int j = 0; j < r; j++)
         {
             //term1
             term1 = Cudd_ReadOne(manager);
@@ -116,14 +115,15 @@ void Simulator::Toffoli(int targ, std::vector<int> &cont, std::vector<int> &ncon
         }
     }
     Cudd_RecursiveDeref(manager, g);
+    gatecount++;
+    nodecount();
 }
 
-void Simulator::Fredkin(int swapA , int swapB, std::vector<int> &cont)
+void Simulator::Fredkin(int swapA , int swapB, std::vector<int> cont)
 {
     assert(cont.size() < n);
     int IsBadtarg = 0;
-    int i, j, h;
-    for (i = 0; i < cont.size(); i++)
+    for (int i = 0; i < cont.size(); i++)
     {
         if ((swapA == cont[i]) || (swapB == cont[i]))
         {
@@ -137,7 +137,7 @@ void Simulator::Fredkin(int swapA , int swapB, std::vector<int> &cont)
 
     g = Cudd_ReadOne(manager);
     Cudd_Ref(g);
-    for (h = cont.size() - 1; h >= 0; h--)
+    for (int h = cont.size() - 1; h >= 0; h--)
     {
         tmp = Cudd_bddAnd(manager, Cudd_bddIthVar(manager, cont[h]), g);
         Cudd_Ref(tmp);
@@ -145,9 +145,9 @@ void Simulator::Fredkin(int swapA , int swapB, std::vector<int> &cont)
         g = tmp;
     }
 
-    for (i = 0; i < w; i++) // F = All_Bdd[i][j]
+    for (int i = 0; i < w; i++) // F = All_Bdd[i][j]
     {
-        for (j = 0; j < r; j++)
+        for (int j = 0; j < r; j++)
         {
             //term1
             term1 = Cudd_ReadOne(manager);
@@ -238,6 +238,8 @@ void Simulator::Fredkin(int swapA , int swapB, std::vector<int> &cont)
         }
     }
     Cudd_RecursiveDeref(manager, g);
+    gatecount++;
+    nodecount();
 }
 
 void Simulator::Peres(int a, int b, int c)
@@ -253,6 +255,8 @@ void Simulator::Peres(int a, int b, int c)
     Toffoli(b, cont2, ncont);
     cont2.clear();
     ncont.clear();
+    gatecount++;
+    nodecount();
 }
 
 void Simulator::Peres_i(int a, int b, int c)
@@ -268,6 +272,8 @@ void Simulator::Peres_i(int a, int b, int c)
     Toffoli(a, cont1, ncont);
     cont1.clear();
     ncont.clear();
+    gatecount++;
+    nodecount();
 }
 
 void Simulator::Hadamard(int iqubit)
@@ -278,10 +284,9 @@ void Simulator::Hadamard(int iqubit)
 
     DdNode *g, *h, *c, *tmp, *term1, *term2;
 
-    int i, j;
     int overflow_done = 0;
     
-    for (i = 0; i < w; i++) // F = All_Bdd[i][j]
+    for (int i = 0; i < w; i++) // F = All_Bdd[i][j]
     {
         c = Cudd_ReadOne(manager); // init c
         Cudd_Ref(c);
@@ -289,7 +294,7 @@ void Simulator::Hadamard(int iqubit)
         Cudd_Ref(tmp);
         Cudd_RecursiveDeref(manager, c);
         c = tmp;
-        for (j = 0; j < r; j++)
+        for (int j = 0; j < r; j++)
         {
             //g
             g = Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
@@ -353,390 +358,9 @@ void Simulator::Hadamard(int iqubit)
             }
         }
     }
+    gatecount++;
+    nodecount();
 }
-
-// void Simulator::X_1_2(int iqubit)
-// {
-//     assert((iqubit >= 0) & (iqubit < n));
-
-//     k = k + 2;
-
-//     int i, j;
-//     int overflow_done = 0;
-
-//     DdNode *g, *h, *c1, *c2, *tmp, *term1, *term2;
-//     DdNode **e[4], **L[4];
-//     DdNode *copy[2]; // 0:x, 1:y
-//     for (i = 0; i < 4; i++)
-//     {
-//         e[i] = new DdNode *[r];
-//         L[i] = new DdNode *[r];
-//     }
-
-//     for (i = 0; i < 4; i++) //compute e and L
-//     {
-//         c1 = Cudd_Not(Cudd_ReadOne(manager)); // init c
-//         Cudd_Ref(c1);
-//         c2 = Cudd_ReadOne(manager);
-//         Cudd_Ref(c2);
-//         for (j = 0; j < r; j++)
-//         {
-//             //g
-//             g = Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
-//             Cudd_Ref(g);
-//             //d
-//             h = Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_bddIthVar(manager, iqubit));
-//             Cudd_Ref(h);
-
-//             //detect overflow
-//             if ((j == r - 1) && !overflow_done)
-//                 if (overflow(g, h, c1) || overflow(g, Cudd_Not(h), c2))
-//                 {
-//                     alloc_BDD(3, true); // add 3 BDDs when overflow occurs
-//                     alloc_BDD(3, false);
-//                     alloc_BDD(3, false);
-//                     overflow_done = 1;
-//                 }
-//             //sum of e
-//             e[i][j] = Cudd_bddXor(manager, g, h);
-//             Cudd_Ref(e[i][j]);
-//             tmp = Cudd_bddXor(manager, e[i][j], c1);
-//             Cudd_Ref(tmp);
-//             Cudd_RecursiveDeref(manager, e[i][j]);
-//             e[i][j] = tmp;
-//             //sum of L
-//             L[i][j] = Cudd_bddXor(manager, g, Cudd_Not(h));
-//             Cudd_Ref(L[i][j]);
-//             tmp = Cudd_bddXor(manager, L[i][j], c2);
-//             Cudd_Ref(tmp);
-//             Cudd_RecursiveDeref(manager, L[i][j]);
-//             L[i][j] = tmp;
-//             //carry of e & L
-//             if (j == r - 1)
-//             {
-//                 Cudd_RecursiveDeref(manager, c1);
-//                 Cudd_RecursiveDeref(manager, c2);
-//                 Cudd_RecursiveDeref(manager, g);
-//                 Cudd_RecursiveDeref(manager, h);
-//             }
-//             else
-//             {
-//                 //carry of e
-//                 term1 = Cudd_bddAnd(manager, g, h);
-//                 Cudd_Ref(term1);
-//                 term2 = Cudd_bddOr(manager, g, h);
-//                 Cudd_Ref(term2);
-//                 tmp = Cudd_bddAnd(manager, term2, c1);
-//                 Cudd_Ref(tmp);
-//                 Cudd_RecursiveDeref(manager, term2);
-//                 Cudd_RecursiveDeref(manager, c1);
-//                 term2 = tmp;
-//                 c1 = Cudd_bddOr(manager, term1, term2);
-//                 Cudd_Ref(c1);
-//                 Cudd_RecursiveDeref(manager, term1);
-//                 Cudd_RecursiveDeref(manager, term2);
-
-//                 //carry of L
-//                 term1 = Cudd_bddAnd(manager, g, Cudd_Not(h));
-//                 Cudd_Ref(term1);
-//                 term2 = Cudd_bddOr(manager, g, Cudd_Not(h));
-//                 Cudd_Ref(term2);
-//                 Cudd_RecursiveDeref(manager, g);
-//                 Cudd_RecursiveDeref(manager, h);
-//                 tmp = Cudd_bddAnd(manager, term2, c2);
-//                 Cudd_Ref(tmp);
-//                 Cudd_RecursiveDeref(manager, term2);
-//                 Cudd_RecursiveDeref(manager, c2);
-//                 term2 = tmp;
-//                 c2 = Cudd_bddOr(manager, term1, term2);
-//                 Cudd_Ref(c2);
-//                 Cudd_RecursiveDeref(manager, term1);
-//                 Cudd_RecursiveDeref(manager, term2);
-//             }
-//         }
-//     }
-
-//     for (i = 0; i < 4; i++)
-//         for (j = 0; j < r; j++)
-//             Cudd_RecursiveDeref(manager, All_Bdd[i][j]);
-
-//     for (i = 0; i < r; i++) //shift L
-//     {
-//         for (j = 0; j < 4; j++)
-//         {
-//             if ((j == x) || (j == y))
-//             {
-//                 /* copy */
-//                 copy[j] = Cudd_ReadOne(manager);
-//                 Cudd_Ref(copy[j]);
-//                 tmp = Cudd_bddAnd(manager, copy[j], L[j][i]);
-//                 Cudd_Ref(tmp);
-//                 Cudd_RecursiveDeref(manager, L[j][i]);
-//                 Cudd_RecursiveDeref(manager, copy[j]);
-//                 copy[j] = tmp;
-
-//                 term1 = Cudd_bddAnd(manager, L[j + 2][i], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
-//                 Cudd_Ref(term1);
-//                 term2 = Cudd_Not(L[j + 2][i]);
-//                 Cudd_Ref(term2);
-//                 tmp = Cudd_bddAnd(manager, term2, Cudd_bddIthVar(manager, iqubit));
-//                 Cudd_Ref(tmp);
-//                 Cudd_RecursiveDeref(manager, term2);
-//                 term2 = tmp;
-//                 L[j][i] = Cudd_bddOr(manager, term1, term2);
-//                 Cudd_Ref(L[j][i]);
-//                 Cudd_RecursiveDeref(manager, term1);
-//                 Cudd_RecursiveDeref(manager, term2);
-//             }
-//             else
-//             {
-//                 Cudd_RecursiveDeref(manager, L[j][i]);
-//                 term1 = Cudd_Not(copy[j - 2]);
-//                 Cudd_Ref(term1);
-//                 tmp = Cudd_bddAnd(manager, term1, Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
-//                 Cudd_Ref(tmp);
-//                 Cudd_RecursiveDeref(manager, term1);
-//                 term1 = tmp;
-//                 term2 = Cudd_bddAnd(manager, copy[j - 2], Cudd_bddIthVar(manager, iqubit));
-//                 Cudd_Ref(term2);
-//                 Cudd_RecursiveDeref(manager, copy[j - 2]);
-//                 L[j][i] = Cudd_bddOr(manager, term1, term2);
-//                 Cudd_Ref(L[j][i]);
-//                 Cudd_RecursiveDeref(manager, term1);
-//                 Cudd_RecursiveDeref(manager, term2);
-//             }
-//         }
-//     }
-
-//     overflow_done = 0;
-
-//     for (i = 0; i < 4; i++) //compute F
-//     {
-//         c1 = Cudd_ReadOne(manager); // init c
-//         Cudd_Ref(c1);
-//         if ((i == x) || (i == y))
-//             tmp = Cudd_bddAnd(manager, c1, Cudd_bddIthVar(manager, iqubit));
-//         else
-//             tmp = Cudd_bddAnd(manager, c1, Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
-//         Cudd_Ref(tmp);
-//         Cudd_RecursiveDeref(manager, c1);
-//         c1 = tmp;
-
-//         for (j = 0; j < r; j++)
-//         {
-//             //detect overflow
-//             if ((j == r - 1) && !overflow_done)
-//                 if (overflow(e[i][j], L[i][j], c1))
-//                 {
-//                     alloc_BDD(3, false); // add 3 BDDs when overflow occurs
-//                     alloc_BDD(3, true);
-//                     alloc_BDD(3, true);
-//                     overflow_done = 1;
-//                 }
-//             //sum
-//             All_Bdd[i][j] = Cudd_bddXor(manager, e[i][j], L[i][j]);
-//             Cudd_Ref(All_Bdd[i][j]);
-//             tmp = Cudd_bddXor(manager, All_Bdd[i][j], c1);
-//             Cudd_Ref(tmp);
-//             Cudd_RecursiveDeref(manager, All_Bdd[i][j]);
-//             All_Bdd[i][j] = tmp;
-//             //carry
-//             if (j == r - 1)
-//                 Cudd_RecursiveDeref(manager, c1);
-//             else
-//             {
-//                 term1 = Cudd_bddAnd(manager, e[i][j], L[i][j]);
-//                 Cudd_Ref(term1);
-//                 term2 = Cudd_bddOr(manager, e[i][j], L[i][j]);
-//                 Cudd_Ref(term2);
-//                 tmp = Cudd_bddAnd(manager, term2, c1);
-//                 Cudd_Ref(tmp);
-//                 Cudd_RecursiveDeref(manager, term2);
-//                 Cudd_RecursiveDeref(manager, c1);
-//                 term2 = tmp;
-//                 c1 = Cudd_bddOr(manager, term1, term2);
-//                 Cudd_Ref(c1);
-//                 Cudd_RecursiveDeref(manager, term1);
-//                 Cudd_RecursiveDeref(manager, term2);
-//             }
-//         }
-//     }
-
-//     for (i = 0; i < 4; i++)
-//     {
-//         for (j = 0; j < r; j++)
-//         {
-//             Cudd_RecursiveDeref(manager, e[i][j]);
-//             Cudd_RecursiveDeref(manager, L[i][j]);
-//         }
-//         delete[] e[i];
-//         delete[] L[i];
-//     }
-// }
-
-// void Simulator::Y_1_2(int iqubit)
-// {
-//     assert((iqubit >= 0) & (iqubit < n));
-
-//     k = k + 2;
-
-//     int i, j;
-//     int overflow_done = 0;
-
-//     DdNode *g, *h, *c, *tmp, *term1, *term2;
-//     DdNode **e[4];
-//     for (i = 0; i < 4; i++)
-//         e[i] = new DdNode *[r];
-
-//     for (i = 0; i < 4; i++) //compute e
-//     {
-//         c = Cudd_ReadOne(manager); // init c
-//         Cudd_Ref(c);
-//         tmp = Cudd_bddAnd(manager, c, Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
-//         Cudd_Ref(tmp);
-//         Cudd_RecursiveDeref(manager, c);
-//         c = tmp;
-//         for (j = 0; j < r; j++)
-//         {
-//             //g
-//             g = Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
-//             Cudd_Ref(g);
-//             //d
-//             term1 = Cudd_bddAnd(manager, All_Bdd[i][j], Cudd_bddIthVar(manager, iqubit));
-//             Cudd_Ref(term1);
-//             term2 = Cudd_Not(Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_bddIthVar(manager, iqubit)));
-//             Cudd_Ref(term2);
-//             tmp = Cudd_bddAnd(manager, term2, Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
-//             Cudd_Ref(tmp);
-//             Cudd_RecursiveDeref(manager, term2);
-//             term2 = tmp;
-//             h = Cudd_bddOr(manager, term1, term2);
-//             Cudd_Ref(h);
-//             Cudd_RecursiveDeref(manager, term1);
-//             Cudd_RecursiveDeref(manager, term2);
-
-//             //detect overflow
-//             if ((j == r - 1) && !overflow_done)
-//                 if (overflow(g, h, c))
-//                 {
-//                     alloc_BDD(3, true); // add 3 BDDs when overflow occurs
-//                     alloc_BDD(3, false);
-//                     overflow_done = 1;
-//                 }
-//             //sum
-//             e[i][j] = Cudd_bddXor(manager, g, h);
-//             Cudd_Ref(e[i][j]);
-//             tmp = Cudd_bddXor(manager, e[i][j], c);
-//             Cudd_Ref(tmp);
-//             Cudd_RecursiveDeref(manager, e[i][j]);
-//             e[i][j] = tmp;
-//             //carry
-//             if (j == r - 1)
-//             {
-//                 Cudd_RecursiveDeref(manager, c);
-//                 Cudd_RecursiveDeref(manager, g);
-//                 Cudd_RecursiveDeref(manager, h);
-//             }
-//             else
-//             {
-//                 term1 = Cudd_bddAnd(manager, g, h);
-//                 Cudd_Ref(term1);
-//                 term2 = Cudd_bddOr(manager, g, h);
-//                 Cudd_Ref(term2);
-//                 Cudd_RecursiveDeref(manager, g);
-//                 Cudd_RecursiveDeref(manager, h);
-//                 tmp = Cudd_bddAnd(manager, term2, c);
-//                 Cudd_Ref(tmp);
-//                 Cudd_RecursiveDeref(manager, term2);
-//                 Cudd_RecursiveDeref(manager, c);
-//                 term2 = tmp;
-//                 c = Cudd_bddOr(manager, term1, term2);
-//                 Cudd_Ref(c);
-//                 Cudd_RecursiveDeref(manager, term1);
-//                 Cudd_RecursiveDeref(manager, term2);
-//             }
-//         }
-//     }
-
-//     for (i = 0; i < 4; i++)
-//         for (j = 0; j < r; j++)
-//             Cudd_RecursiveDeref(manager, All_Bdd[i][j]);
-
-//     overflow_done = 0;
-
-//     for (i = 0; i < 4; i++) //compute F
-//     {
-//         // init c
-//         if ((i == x) || (i == y))
-//             c = Cudd_Not(Cudd_ReadOne(manager));
-//         else
-//             c = Cudd_ReadOne(manager);
-//         Cudd_Ref(c);
-
-//         int fromInd = (i + 2) % 4;
-//         int toInd = i;
-
-//         if (i == l) // negate e
-//         {
-//             for (j = 0; j < r; j++)
-//             {
-//                 tmp = Cudd_Not(e[x][j]);
-//                 Cudd_Ref(tmp);
-//                 Cudd_RecursiveDeref(manager, e[x][j]);
-//                 e[x][j] = tmp;
-//                 tmp = Cudd_Not(e[y][j]);
-//                 Cudd_Ref(tmp);
-//                 Cudd_RecursiveDeref(manager, e[y][j]);
-//                 e[y][j] = tmp;
-//             }
-//         }
-
-//         for (j = 0; j < r; j++)
-//         {
-//             //detect overflow
-//             if ((j == r - 1) && !overflow_done)
-//                 if (overflow(e[toInd][j], e[fromInd][j], c))
-//                 {
-//                     alloc_BDD(3, false); // add 3 BDDs when overflow occurs
-//                     alloc_BDD(3, true);
-//                     overflow_done = 1;
-//                 }
-//             //sum
-//             All_Bdd[toInd][j] = Cudd_bddXor(manager, e[toInd][j], e[fromInd][j]);
-//             Cudd_Ref(All_Bdd[toInd][j]);
-//             tmp = Cudd_bddXor(manager, All_Bdd[toInd][j], c);
-//             Cudd_Ref(tmp);
-//             Cudd_RecursiveDeref(manager, All_Bdd[toInd][j]);
-//             All_Bdd[toInd][j] = tmp;
-//             //carry
-//             if (j == r - 1)
-//                 Cudd_RecursiveDeref(manager, c);
-//             else
-//             {
-//                 term1 = Cudd_bddAnd(manager, e[toInd][j], e[fromInd][j]);
-//                 Cudd_Ref(term1);
-//                 term2 = Cudd_bddOr(manager, e[toInd][j], e[fromInd][j]);
-//                 Cudd_Ref(term2);
-//                 tmp = Cudd_bddAnd(manager, term2, c);
-//                 Cudd_Ref(tmp);
-//                 Cudd_RecursiveDeref(manager, term2);
-//                 Cudd_RecursiveDeref(manager, c);
-//                 term2 = tmp;
-//                 c = Cudd_bddOr(manager, term1, term2);
-//                 Cudd_Ref(c);
-//                 Cudd_RecursiveDeref(manager, term1);
-//                 Cudd_RecursiveDeref(manager, term2);
-//             }
-//         }
-//     }
-
-//     for (i = 0; i < 4; i++)
-//     {
-//         for (j = 0; j < r; j++)
-//             Cudd_RecursiveDeref(manager, e[i][j]);
-//         delete[] e[i];
-//     }
-// }
 
 void Simulator::rx_pi_2(int iqubit)
 {
@@ -744,18 +368,18 @@ void Simulator::rx_pi_2(int iqubit)
 
     k = k + 1;
 
-    int i, j, nshift = w / 2;
+    int nshift = w / 2;
     int overflow_done = 0;
 
     DdNode *g, *h, *c, *tmp, *term1, *term2;
     DdNode **copy[w];
-    for (i = 0; i < w; i++)
+    for (int i = 0; i < w; i++)
         copy[i] = new DdNode *[r];
 
     /* copy */
-    for (i = 0; i < w; i++)
+    for (int i = 0; i < w; i++)
     {
-         for (j = 0; j < r; j++)
+         for (int j = 0; j < r; j++)
         {
             copy[i][j] = Cudd_ReadOne(manager);
             Cudd_Ref(copy[i][j]);
@@ -766,7 +390,7 @@ void Simulator::rx_pi_2(int iqubit)
         }
     }
 
-    for (i = 0; i < w; i++)
+    for (int i = 0; i < w; i++)
     {
         // init c
         if (i < nshift)
@@ -775,7 +399,7 @@ void Simulator::rx_pi_2(int iqubit)
         else
             c = Cudd_Not(Cudd_ReadOne(manager));
         Cudd_Ref(c);
-        for (j = 0; j < r; j++)
+        for (int j = 0; j < r; j++)
         {
             if (i < nshift)
             {
@@ -858,12 +482,14 @@ void Simulator::rx_pi_2(int iqubit)
             }
         }
     }
-    for (i = 0; i < w; i++)
+    for (int i = 0; i < w; i++)
     {
-        for (j = 0; j < r; j++)
+        for (int j = 0; j < r; j++)
             Cudd_RecursiveDeref(manager, copy[i][j]);
         delete[] copy[i];
     }
+    gatecount++;
+    nodecount();
 }
 
 void Simulator::ry_pi_2(int iqubit)
@@ -873,12 +499,11 @@ void Simulator::ry_pi_2(int iqubit)
 
     k = k + 1;
 
-    int i, j;
     int overflow_done = 0;
 
     DdNode *g, *h, *c, *tmp, *term1, *term2;
 
-    for (i = 0; i < w; i++)
+    for (int i = 0; i < w; i++)
     {
         c = Cudd_ReadOne(manager); // init c
         Cudd_Ref(c);
@@ -886,7 +511,7 @@ void Simulator::ry_pi_2(int iqubit)
         Cudd_Ref(tmp);
         Cudd_RecursiveDeref(manager, c);
         c = tmp;
-        for (j = 0; j < r; j++)
+        for (int j = 0; j < r; j++)
         {
             //g
             g = Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
@@ -947,51 +572,40 @@ void Simulator::ry_pi_2(int iqubit)
             }
         }
     }
+    gatecount++;
+    nodecount();
 }
 
-void Simulator::Phase_shift(int phase, int *iqubit, int napplied)
+void Simulator::Phase_shift(int phase, int iqubit)
 {
-    int i, j, nshift = w / phase;
-    for (i = 0; i < napplied; i++)
-    {
-        assert((iqubit[i] >= 0) & (iqubit[i] < n));
-    }
-    DdNode *tmp, *term1, *term2, *inter, *qubit_and;
+    int nshift = w / phase;
+    assert((iqubit >= 0) & (iqubit < n));
+    DdNode *tmp, *term1, *term2, *inter;
     DdNode *copy[nshift];
     DdNode *c[nshift];
 
-    qubit_and = Cudd_ReadOne(manager); // init qubit_and
-    Cudd_Ref(qubit_and);
-    for (i = napplied - 1; i >= 0; i--)
-    {
-        tmp = Cudd_bddAnd(manager, qubit_and, Cudd_bddIthVar(manager, iqubit[i]));
-        Cudd_Ref(tmp);
-        Cudd_RecursiveDeref(manager, qubit_and);
-        qubit_and = tmp;
-    }
-
-    for (i = 0; i < nshift; i++) // init c
+    for (int i = 0; i < nshift; i++) // init c
     {
         c[i] = Cudd_ReadOne(manager);
         Cudd_Ref(c[i]);
-        tmp = Cudd_bddAnd(manager, c[i], qubit_and);
+        tmp = Cudd_bddAnd(manager, c[i], Cudd_bddIthVar(manager, iqubit));
         Cudd_Ref(tmp);
         Cudd_RecursiveDeref(manager, c[i]);
         c[i] = tmp;
     }
-    for (i = 0; i < r; i++)
+    for (int i = 0; i < r; i++)
     {
-        for (j = 0; j < w; j++)
+        for (int j = 0; j < w; j++)
         {
             if (j >= w - nshift)
             {
-                term1 = Cudd_bddAnd(manager, All_Bdd[j][i], Cudd_Not(qubit_and));
+                term1 = Cudd_bddAnd(manager, All_Bdd[j][i], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
                 Cudd_Ref(term1);
                 Cudd_RecursiveDeref(manager, All_Bdd[j][i]);
                 term2 = Cudd_Not(copy[j - (w - nshift)]);
                 Cudd_Ref(term2);
                 Cudd_RecursiveDeref(manager, copy[j - (w - nshift)]);
-                tmp = Cudd_bddAnd(manager, term2, qubit_and);
+                tmp = Cudd_bddAnd(manager, term2, Cudd_bddIthVar(manager, iqubit));
                 Cudd_Ref(tmp);
                 Cudd_RecursiveDeref(manager, term2);
                 term2 = tmp;
@@ -1034,10 +648,10 @@ void Simulator::Phase_shift(int phase, int *iqubit, int napplied)
                     copy[j] = tmp;
                 }
 
-                term1 = Cudd_bddAnd(manager, All_Bdd[j][i], Cudd_Not(qubit_and));
+                term1 = Cudd_bddAnd(manager, All_Bdd[j][i], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
                 Cudd_Ref(term1);
                 Cudd_RecursiveDeref(manager, All_Bdd[j][i]);
-                term2 = Cudd_bddAnd(manager, All_Bdd[j + nshift][i], qubit_and);
+                term2 = Cudd_bddAnd(manager, All_Bdd[j + nshift][i], Cudd_bddIthVar(manager, iqubit));
                 Cudd_Ref(term2);
                 All_Bdd[j][i] = Cudd_bddOr(manager, term1, term2);
                 Cudd_Ref(All_Bdd[j][i]);
@@ -1046,54 +660,42 @@ void Simulator::Phase_shift(int phase, int *iqubit, int napplied)
             }
         }
     }
-    Cudd_RecursiveDeref(manager, qubit_and);
-    for (i = 0; i < nshift; i++)
+    for (int i = 0; i < nshift; i++)
         Cudd_RecursiveDeref(manager, c[i]);
+    gatecount++;
+    nodecount();
 }
 
-void Simulator::Phase_shift_dagger(int phase, int *iqubit, int napplied)
+void Simulator::Phase_shift_dagger(int phase, int iqubit)
 {
-    int i, j, nshift = w / abs(phase);
-    for (i = 0; i < napplied; i++)
-    {
-        assert((iqubit[i] >= 0) & (iqubit[i] < n));
-    }
-    DdNode *tmp, *term1, *term2, *inter, *qubit_and;
+    int nshift = w / abs(phase);
+    assert((iqubit >= 0) & (iqubit < n));
+    DdNode *tmp, *term1, *term2, *inter;
     DdNode *copy[nshift];
     DdNode *c[nshift];
 
-    qubit_and = Cudd_ReadOne(manager); // init qubit_and
-    Cudd_Ref(qubit_and);
-    for (i = napplied - 1; i >= 0; i--)
-    {
-        tmp = Cudd_bddAnd(manager, qubit_and, Cudd_bddIthVar(manager, iqubit[i]));
-        Cudd_Ref(tmp);
-        Cudd_RecursiveDeref(manager, qubit_and);
-        qubit_and = tmp;
-    }
-
-    for (i = 0; i < nshift; i++) // init c
+    for (int i = 0; i < nshift; i++) // init c
     {
         c[i] = Cudd_ReadOne(manager);
         Cudd_Ref(c[i]);
-        tmp = Cudd_bddAnd(manager, c[i], qubit_and);
+        tmp = Cudd_bddAnd(manager, c[i], Cudd_bddIthVar(manager, iqubit));
         Cudd_Ref(tmp);
         Cudd_RecursiveDeref(manager, c[i]);
         c[i] = tmp;
     }
-    for (i = 0; i < r; i++)
+    for (int i = 0; i < r; i++)
     {
-        for (j = w - 1; j >= 0; j--)
+        for (int j = w - 1; j >= 0; j--)
         {
             if (j < nshift)
             {
-                term1 = Cudd_bddAnd(manager, All_Bdd[j][i], Cudd_Not(qubit_and));
+                term1 = Cudd_bddAnd(manager, All_Bdd[j][i], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
                 Cudd_Ref(term1);
                 Cudd_RecursiveDeref(manager, All_Bdd[j][i]);
                 term2 = Cudd_Not(copy[j]);
                 Cudd_Ref(term2);
                 Cudd_RecursiveDeref(manager, copy[j]);
-                tmp = Cudd_bddAnd(manager, term2, qubit_and);
+                tmp = Cudd_bddAnd(manager, term2, Cudd_bddIthVar(manager, iqubit));
                 Cudd_Ref(tmp);
                 Cudd_RecursiveDeref(manager, term2);
                 term2 = tmp;
@@ -1136,10 +738,10 @@ void Simulator::Phase_shift_dagger(int phase, int *iqubit, int napplied)
                     copy[j - (w - nshift)] = tmp;
                 }
 
-                term1 = Cudd_bddAnd(manager, All_Bdd[j][i], Cudd_Not(qubit_and));
+                term1 = Cudd_bddAnd(manager, All_Bdd[j][i], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
                 Cudd_Ref(term1);
                 Cudd_RecursiveDeref(manager, All_Bdd[j][i]);
-                term2 = Cudd_bddAnd(manager, All_Bdd[j - nshift][i], qubit_and);
+                term2 = Cudd_bddAnd(manager, All_Bdd[j - nshift][i], Cudd_bddIthVar(manager, iqubit));
                 Cudd_Ref(term2);
                 All_Bdd[j][i] = Cudd_bddOr(manager, term1, term2);
                 Cudd_Ref(All_Bdd[j][i]);
@@ -1148,9 +750,10 @@ void Simulator::Phase_shift_dagger(int phase, int *iqubit, int napplied)
             }
         }
     }
-    Cudd_RecursiveDeref(manager, qubit_and);
-    for (i = 0; i < nshift; i++)
+    for (int i = 0; i < nshift; i++)
         Cudd_RecursiveDeref(manager, c[i]);
+    gatecount++;
+    nodecount();
 }
 
 void Simulator::PauliX(int iqubit)
@@ -1159,11 +762,9 @@ void Simulator::PauliX(int iqubit)
 
     DdNode *tmp, *term1, *term2;
 
-    int i, j;
-
-    for (i = 0; i < w; i++) // F = All_Bdd[i][j]
+    for (int i = 0; i < w; i++) // F = All_Bdd[i][j]
     {
-        for (j = 0; j < r; j++)
+        for (int j = 0; j < r; j++)
         {
             //term1
             term1 = Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
@@ -1191,6 +792,8 @@ void Simulator::PauliX(int iqubit)
             Cudd_RecursiveDeref(manager, term2);
         }
     }
+    gatecount++;
+    nodecount();
 }
 
 void Simulator::PauliY(int iqubit)
@@ -1199,13 +802,13 @@ void Simulator::PauliY(int iqubit)
 
     PauliX(iqubit);
 
-    int i, j, nshift = w / 2;
+    int nshift = w / 2;
 
     DdNode *tmp, *term1, *term2, *inter;
     DdNode *copy[nshift];
     DdNode *c[w];
 
-    for (i = 0; i < w; i++) // init c
+    for (int i = 0; i < w; i++) // init c
     {
         c[i] = Cudd_ReadOne(manager);
         Cudd_Ref(c[i]);
@@ -1217,9 +820,9 @@ void Simulator::PauliY(int iqubit)
         Cudd_RecursiveDeref(manager, c[i]);
         c[i] = tmp;
     }
-    for (i = 0; i < r; i++)
+    for (int i = 0; i < r; i++)
     {
-        for (j = 0; j < w; j++)
+        for (int j = 0; j < w; j++)
         {
             if (j < nshift)
             {
@@ -1284,24 +887,25 @@ void Simulator::PauliY(int iqubit)
             }
         }
     }
-    for (i = 0; i < 4; i++) // deref c
+    for (int i = 0; i < 4; i++) // deref c
         Cudd_RecursiveDeref(manager, c[i]);
+    gatecount++;
+    nodecount();
 }
 
-void Simulator::PauliZ(int *iqubit, int napplied)
+void Simulator::PauliZ(std::vector<int> iqubit)
 {
-    int i, j;
-    for (i = 0; i < napplied; i++)
+    for (int i = 0; i < iqubit.size(); i++)
     {
         assert((iqubit[i] >= 0) & (iqubit[i] < n));
     }
-    assert((napplied == 1) || (napplied == 2));
+    assert((iqubit.size() == 1) || (iqubit.size() == 2));
 
     DdNode *c, *tmp, *term1, *term2, *inter, *qubit_and;
 
     qubit_and = Cudd_ReadOne(manager); // init qubit_and
     Cudd_Ref(qubit_and);
-    for (i = napplied - 1; i >= 0; i--)
+    for (int i = iqubit.size() - 1; i >= 0; i--)
     {
         tmp = Cudd_bddAnd(manager, qubit_and, Cudd_bddIthVar(manager, iqubit[i]));
         Cudd_Ref(tmp);
@@ -1309,7 +913,7 @@ void Simulator::PauliZ(int *iqubit, int napplied)
         qubit_and = tmp;
     }
 
-    for (i = 0; i < w; i++)
+    for (int i = 0; i < w; i++)
     {
         c = Cudd_ReadOne(manager); // init c
         Cudd_Ref(c);
@@ -1317,7 +921,7 @@ void Simulator::PauliZ(int *iqubit, int napplied)
         Cudd_Ref(tmp);
         Cudd_RecursiveDeref(manager, c);
         c = tmp;
-        for (j = 0; j < r; j++)
+        for (int j = 0; j < r; j++)
         {
             term1 = Cudd_bddAnd(manager, All_Bdd[i][j], Cudd_Not(qubit_and));
             Cudd_Ref(term1);
@@ -1357,4 +961,12 @@ void Simulator::PauliZ(int *iqubit, int napplied)
         Cudd_RecursiveDeref(manager, c);
     }
     Cudd_RecursiveDeref(manager, qubit_and);
+    gatecount++;
+    nodecount();
+}
+
+void Simulator::measure(int qreg, int creg)
+{
+    measured_qubits.push_back(qreg);
+    measured_qubits_to_clbits[qreg] = creg;
 }

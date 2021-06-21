@@ -19,7 +19,7 @@ double Simulator::measure_probability(DdNode *node, int kd2, int nVar, int nAnci
     DdNode *child = Cudd_Child(manager, node, edge);
     Cudd_Ref(child);
     int position_node = Cudd_ReadPerm(manager, Cudd_NodeReadIndex(node)), position_child = Cudd_ReadPerm(manager, Cudd_NodeReadIndex(child));
-    int skip_level, i, j, k;
+    int skip_level;
     std::unordered_map<DdNode *, double>::iterator it;
     it = Node_Table.find(child);
 
@@ -41,7 +41,7 @@ double Simulator::measure_probability(DdNode *node, int kd2, int nVar, int nAnci
         {
             re = 0;
             im = 0;
-            for (i = 0; i < w; i++)
+            for (int i = 0; i < w; i++)
             {
                 re -= cos(i/w * PI);
                 im -= sin(i/w * PI);
@@ -66,13 +66,13 @@ double Simulator::measure_probability(DdNode *node, int kd2, int nVar, int nAnci
             re = 0;
             im = 0;
             int *assign = new int[nVar];
-            for (i = 0; i < nVar; i++)
+            for (int i = 0; i < nVar; i++)
                 assign[i] = 0;
             /* TODO: BDD to truth table */
-            for (i = 0; i < w; i++) //compute each complex value
+            for (int i = 0; i < w; i++) //compute each complex value
             {
                 int_value = 0;
-                for (j = 0; j < r; j++) //compute each integer
+                for (int j = 0; j < r; j++) //compute each integer
                 {
                     tmp = Cudd_Eval(manager, child, assign);
                     Cudd_Ref(tmp);
@@ -88,7 +88,7 @@ double Simulator::measure_probability(DdNode *node, int kd2, int nVar, int nAnci
                 re += int_value * cos((double) (w - i - 1)/w * PI);
                 im += int_value * sin((double) (w - i - 1)/w * PI);
                 full_adder_plus_1_start(nVar, assign, n);
-                for (j = n + nAnci_fourInt; j < nVar; j++) // reset array: not necessary but straightforward
+                for (int j = n + nAnci_fourInt; j < nVar; j++) // reset array: not necessary but straightforward
                     assign[j] = 0;
             }
             probability = pow(re, 2) + pow(im, 2);
@@ -211,26 +211,27 @@ void Simulator::measurement()
     double H_factor = pow(oneroot2, k%2);
     int nAnci_oneInt = ceil(log(r) / log(2)), nAnci_fourInt = ceil(log(w) / log(2)), nAnci = nAnci_oneInt + nAnci_fourInt, nnAnci_fourInt = n + nAnci_fourInt, nVar = n + nAnci;
     DdNode *tmp1, *tmp2, *tmp3;
-    int i, j, h;
+
+    Cudd_AutodynDisable(manager);
     
     int *arrAnci_fourInt = new int[nAnci_fourInt];
-    for (i = 0; i < nAnci_fourInt; i++)
+    for (int i = 0; i < nAnci_fourInt; i++)
         arrAnci_fourInt[i] = 0;
     int *arrAnci_oneInt = new int[nAnci_oneInt];
-    for (i = 0; i < nAnci_oneInt; i++)
+    for (int i = 0; i < nAnci_oneInt; i++)
         arrAnci_oneInt[i] = 0;
     
     bigBDD = Cudd_Not(Cudd_ReadOne(manager));
     Cudd_Ref(bigBDD);
-    for (i = 0; i < w; i++)
+    for (int i = 0; i < w; i++)
     {
         tmp3 = Cudd_Not(Cudd_ReadOne(manager));
         Cudd_Ref(tmp3);
-        for (j = 0; j < r; j++)
+        for (int j = 0; j < r; j++)
         {
             tmp1 = Cudd_ReadOne(manager);
             Cudd_Ref(tmp1);
-            for (h = n + nAnci - 1; h >= nnAnci_fourInt; h--)
+            for (int h = n + nAnci - 1; h >= nnAnci_fourInt; h--)
             {
                 if (arrAnci_oneInt[h - nnAnci_fourInt])
                     tmp2 = Cudd_bddAnd(manager, Cudd_bddIthVar(manager, h), tmp1);
@@ -254,7 +255,7 @@ void Simulator::measurement()
         }
         tmp1 = Cudd_ReadOne(manager);
         Cudd_Ref(tmp1);
-        for (j = nnAnci_fourInt - 1; j >= n; j--)
+        for (int j = nnAnci_fourInt - 1; j >= n; j--)
         {
             if (arrAnci_fourInt[j - n])
                 tmp2 = Cudd_bddAnd(manager, Cudd_bddIthVar(manager, j), tmp1);
@@ -275,7 +276,7 @@ void Simulator::measurement()
         Cudd_RecursiveDeref(manager, bigBDD);
         bigBDD = tmp2;
         full_adder_plus_1(nAnci_fourInt, arrAnci_fourInt);
-        for (j = 0; j < nAnci_oneInt; j++) // reset array: not necessary but straightforward
+        for (int j = 0; j < nAnci_oneInt; j++) // reset array: not necessary but straightforward
             arrAnci_oneInt[j] = 0;
     }
     nodecount();
@@ -284,7 +285,7 @@ void Simulator::measurement()
     int *permutation = new int[nVar];
     int indCount1 = 0;
     int indCount0 = measured_qubits.size();
-    for (i = 0; i < n; i++)
+    for (int i = 0; i < n; i++)
     {
         int index = Cudd_ReadInvPerm(manager, i);
         if (measured_qubits_to_clbits[index] != -1)
@@ -298,7 +299,7 @@ void Simulator::measurement()
             indCount0++;
         }
     }
-    for (i = n; i < nVar; i++)
+    for (int i = n; i < nVar; i++)
         permutation[i] = Cudd_ReadInvPerm(manager, i);
     int dum = Cudd_ShuffleHeap(manager, permutation);
     nodecount();
@@ -306,20 +307,20 @@ void Simulator::measurement()
     std::unordered_map<std::string, int>::iterator it;
     std::string measure_outcome_qubits;
     std::string measure_outcome_clbits;
-    for (i = 0; i < shots; i++)
+    for (int i = 0; i < shots; i++)
     {
-        for (j = 0; j < n; j++)
+        for (int j = 0; j < n; j++)
         {
             measure_outcome_qubits += '0';
             measure_outcome_clbits += '0';
         }
         normalize_factor = 1;
 
-        for (j = 0; j < measured_qubits.size(); j++)
+        for (int j = 0; j < measured_qubits.size(); j++)
             measure_one(j, k/2, H_factor, nVar, nAnci_fourInt, &measure_outcome_qubits);
 
         // convert measurement outcome of qubits to clbits
-        for (j = 0; j < measured_qubits.size(); j++)
+        for (int j = 0; j < measured_qubits.size(); j++)
         {
             int qIndex = measured_qubits[j];
             int cIndex = measured_qubits_to_clbits[qIndex];
@@ -361,20 +362,19 @@ void Simulator::getStatevector()
     unsigned long long nEntries = pow(2, n);
     int oneEntry;
     long long int_value = 0;
-    unsigned long long i, j, h;
     DdNode *tmp;
 
-    for (i = 0; i < n; i++) //initialize assignment
+    for (int i = 0; i < n; i++) //initialize assignment
         assign[i] = 0;
 
     statevector = "[";
 
-    for (i = 0; i < nEntries; i++) // compute every entry
+    for (unsigned long long i = 0; i < nEntries; i++) // compute every entry
     {
         re = 0;
         im = 0;
         bool isZero = 0;
-        for (j = 0; j < n; j++)
+        for (int j = 0; j < n; j++)
         {
             if (measured_qubits_to_clbits[j] != -1)
                 if (assign[j] != stoi(measure_outcome.substr(n - 1 - j, 1)))
@@ -386,10 +386,10 @@ void Simulator::getStatevector()
         
         if (isZero == 0)
         {
-            for (j = 0; j < w; j++) // compute every complex value
+            for (int j = 0; j < w; j++) // compute every complex value
             {
                 int_value = 0;
-                for (h = 0; h < r; h++) // compute every integer
+                for (int h = 0; h < r; h++) // compute every integer
                 {
                     tmp = Cudd_Eval(manager, All_Bdd[j][h], assign);
                     Cudd_Ref(tmp);

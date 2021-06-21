@@ -15,24 +15,23 @@
 ***********************************************************************/
 void Simulator::init_state(int *constants)
 {
-    int i, j;
     DdNode *var, *tmp;
     All_Bdd = new DdNode **[w];
-    for (i = 0; i < w; i++)
+    for (int i = 0; i < w; i++)
         All_Bdd[i] = new DdNode *[r];
 
-    for (i = 0; i < r; i++)
+    for (int i = 0; i < r; i++)
     {
         if (i == 0)
         {
-            for (j = 0; j < w - 1; j++)
+            for (int j = 0; j < w - 1; j++)
             {
                 All_Bdd[j][i] = Cudd_Not(Cudd_ReadOne(manager));
                 Cudd_Ref(All_Bdd[j][i]);
             }
             All_Bdd[w - 1][i] = Cudd_ReadOne(manager);
             Cudd_Ref(All_Bdd[w - 1][i]);
-            for (j = n - 1; j >= 0; j--)
+            for (int j = n - 1; j >= 0; j--)
             {
                 var = Cudd_bddIthVar(manager, j);
                 if (constants[j] == 0)
@@ -46,7 +45,7 @@ void Simulator::init_state(int *constants)
         }
         else
         {
-            for (j = 0; j < w; j++)
+            for (int j = 0; j < w; j++)
             {
                 All_Bdd[j][i] = Cudd_Not(Cudd_ReadOne(manager));
                 Cudd_Ref(All_Bdd[j][i]);
@@ -72,15 +71,15 @@ void Simulator::alloc_BDD(bool extend)
     DdNode *tmp;
     
     DdNode ***W = new DdNode **[w];
-    int i, j;
-    for (i = 0; i < w; i++)
+
+    for (int i = 0; i < w; i++)
         W[i] = new DdNode *[r];
 
-    for (i = 0; i < r - inc; i++)
-        for (j = 0; j < w; j++)
+    for (int i = 0; i < r - inc; i++)
+        for (int j = 0; j < w; j++)
             W[j][i] = All_Bdd[j][i];
 
-    for (i = 0; i < w; i++)
+    for (int i = 0; i < w; i++)
         delete[] All_Bdd[i];
     delete All_Bdd;
 
@@ -88,9 +87,9 @@ void Simulator::alloc_BDD(bool extend)
 
     if (extend)
     {
-        for (i = r - inc; i < r; i++)
+        for (int i = r - inc; i < r; i++)
         {
-            for (j = 0; j < w; j++)
+            for (int j = 0; j < w; j++)
             {
                 All_Bdd[j][i] = Cudd_ReadOne(manager);
                 Cudd_Ref(All_Bdd[j][i]);
@@ -156,25 +155,24 @@ void Simulator::decode_entries()
     double H_factor = pow(oneroot2, k);
     double re = 0, im = 0;
     int *assign = new int[n];
-    int nEntries = pow(2, n);
+    unsigned long long nEntries = pow(2, n);
     int oneEntry;
     long long int_value = 0;
-    int i, j, h;
     DdNode *tmp;
 
-    for (i = 0; i < n; i++) //initialize assignment
+    for (int i = 0; i < n; i++) //initialize assignment
         assign[i] = 0;
 
     std::cout << "Amplitudes of the Computational Basis States:" << std::endl;
 
-    for (i = 0; i < nEntries; i++) // compute every entry
+    for (unsigned long long i = 0; i < nEntries; i++) // compute every entry
     {
         re = 0;
         im = 0;
-        for (j = 0; j < w; j++) // compute every complex value
+        for (int j = 0; j < w; j++) // compute every complex value
         {
             int_value = 0;
-            for (h = 0; h < r; h++) // compute every integer
+            for (int h = 0; h < r; h++) // compute every integer
             {
                 tmp = Cudd_Eval(manager, All_Bdd[j][h], assign);
                 Cudd_Ref(tmp);

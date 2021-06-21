@@ -27,45 +27,45 @@ public:
     Simulator(int type, int nshots, int seed) : 
     n(0), r(sizeof(int) * 8), w(4), k(0), inc(3), error(0), 
     normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), measured_qubits(0), shots(nshots)
-    , sim_type(type), gen(std::default_random_engine(seed)){
+    , sim_type(type), statevector("null"), gen(std::default_random_engine(seed)){
+    }
+    Simulator(int nshots, int seed) : 
+    n(0), r(sizeof(int) * 8), w(4), k(0), inc(3), error(0), 
+    normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), measured_qubits(0), shots(nshots)
+    , sim_type(0), statevector("null"), gen(std::default_random_engine(seed)){
     }
     ~Simulator()  { 
         clear();
     }
 
     /* gates */
-    void Toffoli(int targ, std::vector<int> &cont, std::vector<int> &ncont);
-    void Fredkin(int swapA , int swapB, std::vector<int> &cont);
+    void Toffoli(int targ, std::vector<int> cont, std::vector<int> ncont);
+    void Fredkin(int swapA , int swapB, std::vector<int> cont);
     void Peres(int a, int b, int c);
     void Peres_i(int a, int b, int c);
     void Hadamard(int iqubit);
-    // void X_1_2(int iqubit); // has not been modified for modified algebraic
-    // void Y_1_2(int iqubit); // has not been modified for modified algebraic
     void rx_pi_2(int iqubit); 
     void ry_pi_2(int iqubit);
-    void Phase_shift(int phase, int *iqubit, int napplied); // phase can only be the power of 2
-    void Phase_shift_dagger(int phase, int *iqubit, int napplied);
+    void Phase_shift(int phase, int iqubit); // phase can only be 2 to the power of an integer
+    void Phase_shift_dagger(int phase, int iqubit);
     void PauliX(int iqubit);
     void PauliY(int iqubit);
-    void PauliZ(int *iqubit, int napplied); // Z or CZ
+    void PauliZ(std::vector<int> iqubit); // Z or CZ
+    void measure(int qreg, int creg);
 
     /* measurement */
-    double measure_probability(DdNode *node, int kd2, int nVar, int nAnci_fourInt, int edge);
-    void measure_one(int position, int kd2, double H_factor, int nVar, int nAnci_fourInt, std::string *outcome);
     void measurement();
     void getStatevector();
 
     /* simulation */
+    void init_simulator(int n);
     void sim_qasm_file(std::string qasm);
     void sim_qasm(std::string qasm);
+    void print_results();
 
     /* misc */
-    void init_state(int *constants);
-    void decode_entries();
     void reorder();
-    void alloc_BDD(bool extend);
-    int overflow(DdNode *g, DdNode *h, DdNode *crin);
-    void nodecount();
+    void decode_entries();
     void print_info(double runtime, size_t memPeak);
 
 private:
@@ -93,6 +93,16 @@ private:
     unsigned long gatecount;
     unsigned long NodeCount;
     double error;
+
+    /* measurement */
+    double measure_probability(DdNode *node, int kd2, int nVar, int nAnci_fourInt, int edge);
+    void measure_one(int position, int kd2, double H_factor, int nVar, int nAnci_fourInt, std::string *outcome);
+
+    /* misc */
+    void init_state(int *constants);
+    void alloc_BDD(bool extend);
+    int overflow(DdNode *g, DdNode *h, DdNode *crin);
+    void nodecount();
 
     // Clean up Simulator
     void clear() {

@@ -90,4 +90,4 @@ Please cite the following paper if you use our simulator for your research:
 ```
 
 ## Contact
-If you have any questions or suggestions, feel free to [create an issue](https://github.com/NTU-ALComLab/SliQSim/issues), or contact us through r08943103@ntu.edu.tw.
+If you have any questions or suggestions, feel free to [create an issue](https://github.com/NTU-ALComLab/SliQSim/issues), or contact us through matthewyhtsai@gmail.com.

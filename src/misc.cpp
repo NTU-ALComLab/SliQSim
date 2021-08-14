@@ -65,25 +65,23 @@ void Simulator::init_state(int *constants)
   SeeAlso     []
 
 ***********************************************************************/
-void Simulator::alloc_BDD(bool extend)
+void Simulator::alloc_BDD(DdNode ***Bdd, bool extend)
 {
-    r += inc;
     DdNode *tmp;
     
     DdNode ***W = new DdNode **[w];
-
     for (int i = 0; i < w; i++)
         W[i] = new DdNode *[r];
 
     for (int i = 0; i < r - inc; i++)
         for (int j = 0; j < w; j++)
-            W[j][i] = All_Bdd[j][i];
+            W[j][i] = Bdd[j][i];
 
     for (int i = 0; i < w; i++)
-        delete[] All_Bdd[i];
-    delete All_Bdd;
-
-    All_Bdd = W;
+        delete[] Bdd[i];
+    
+    for (int i = 0; i < w; i++)
+        Bdd[i] = W[i];
 
     if (extend)
     {
@@ -91,12 +89,12 @@ void Simulator::alloc_BDD(bool extend)
         {
             for (int j = 0; j < w; j++)
             {
-                All_Bdd[j][i] = Cudd_ReadOne(manager);
-                Cudd_Ref(All_Bdd[j][i]);
-                tmp = Cudd_bddAnd(manager, All_Bdd[j][r - inc - 1], All_Bdd[j][i]);
+                Bdd[j][i] = Cudd_ReadOne(manager);
+                Cudd_Ref(Bdd[j][i]);
+                tmp = Cudd_bddAnd(manager, Bdd[j][r - inc - 1], Bdd[j][i]);
                 Cudd_Ref(tmp);
-                Cudd_RecursiveDeref(manager, All_Bdd[j][i]);
-                All_Bdd[j][i] = tmp;
+                Cudd_RecursiveDeref(manager, Bdd[j][i]);
+                Bdd[j][i] = tmp;
             }
         }
     }

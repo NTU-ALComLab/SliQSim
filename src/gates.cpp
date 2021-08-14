@@ -320,7 +320,8 @@ void Simulator::Hadamard(int iqubit)
             if ((j == r - 1) && !overflow_done)
                 if (overflow(g, d, c))
                 {
-                    alloc_BDD(true); // add new BDDs
+                    r += inc;
+                    alloc_BDD(All_Bdd, true); // add new BDDs
                     overflow_done = 1;
                 }
             //sum
@@ -423,8 +424,9 @@ void Simulator::rx_pi_2(int iqubit)
             if ((j == r - 1) && !overflow_done)
                 if (overflow(copy[i][j], d, c))
                 {
-                    alloc_BDD(true); // add new BDDs
-                    alloc_BDD(true);
+                    r += inc;
+                    alloc_BDD(All_Bdd, true); // add new BDDs
+                    alloc_BDD(copy, true);
                     overflow_done = 1;
                 }
             //sum
@@ -512,7 +514,8 @@ void Simulator::ry_pi_2(int iqubit)
             if ((j == r - 1) && !overflow_done)
                 if (overflow(g, d, c))
                 {
-                    alloc_BDD(true); // add new BDDs
+                    r += inc;
+                    alloc_BDD(All_Bdd, true); // add new BDDs
                     overflow_done = 1;
                 }
             //sum

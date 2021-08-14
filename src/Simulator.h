@@ -100,7 +100,7 @@ private:
 
     /* misc */
     void init_state(int *constants);
-    void alloc_BDD(bool extend);
+    void alloc_BDD(DdNode ***Bdd, bool extend);
     int overflow(DdNode *g, DdNode *h, DdNode *crin);
     void nodecount();
 

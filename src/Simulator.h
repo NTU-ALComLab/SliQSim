@@ -24,14 +24,14 @@ class Simulator
 {
 public:
     // constructor and destructor
-    Simulator(int type, int nshots, int seed) : 
-    n(0), r(sizeof(int) * 8), w(4), k(0), inc(3), error(0), 
-    normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), measured_qubits(0), shots(nshots)
+    Simulator(int type, int nshots, int seed, int bitSize, bool reorder) : 
+    n(0), r(bitSize), w(4), k(0), inc(3), error(0), 
+    normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), measured_qubits(0), shots(nshots), isReorder(reorder)
     , sim_type(type), statevector("null"), gen(std::default_random_engine(seed)){
     }
-    Simulator(int nshots, int seed) : 
-    n(0), r(sizeof(int) * 8), w(4), k(0), inc(3), error(0), 
-    normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), measured_qubits(0), shots(nshots)
+    Simulator(int nshots, int seed, int bitSize, bool reorder) : 
+    n(0), r(bitSize), w(4), k(0), inc(3), error(0), 
+    normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), measured_qubits(0), shots(nshots), isReorder(reorder)
     , sim_type(0), statevector("null"), gen(std::default_random_engine(seed)){
     }
     ~Simulator()  { 
@@ -79,6 +79,7 @@ private:
     int shots;
     int sim_type; // 0: statevector, 1: measure
     bool isMeasure;
+    bool isReorder;
     std::vector<int> measured_qubits; // i-th element is the i-th qubit measured
     int *measured_qubits_to_clbits; // -1 if not measured
     std::string measure_outcome;

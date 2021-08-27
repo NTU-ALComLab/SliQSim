@@ -18,7 +18,11 @@ int main(int argc, char **argv)
                                                            "Note that this option should be avoided if the number of qubits is large since it will result in extremely long runtime.")
     ("shots", po::value<unsigned int>()->default_value(1), "the number of outcomes being sampled, " 
                                                           "this argument is only used when the " 
-                                                          "simulation type is set to \"weak\"")
+                                                          "simulation type is set to \"weak\".")
+    ("r", po::value<unsigned int>()->default_value(32), "integer bit size.")
+    ("reorder", po::value<bool>()->default_value(1), "allow variable reordering or not.\n"
+                                                             "0: disable reordering.\n"
+                                                             "1: enable reordering (default option)")
     ;
     
     po::variables_map vm;
@@ -34,7 +38,8 @@ int main(int argc, char **argv)
     struct timeval t1, t2;
     double elapsedTime;
 
-    int type = vm["type"].as<unsigned int>(), shots = vm["shots"].as<unsigned int>();
+    int type = vm["type"].as<unsigned int>(), shots = vm["shots"].as<unsigned int>(), r = vm["r"].as<unsigned int>();
+    bool isReorder = vm["reorder"].as<bool>();
     if (type == 1)
     {
         shots = 1;
@@ -54,7 +59,7 @@ int main(int argc, char **argv)
     gettimeofday(&t1, NULL);
 
     assert(shots > 0);
-    Simulator simulator(type, shots, seed);
+    Simulator simulator(type, shots, seed, r, isReorder);
 
     if (vm.count("sim_qasm"))
     {

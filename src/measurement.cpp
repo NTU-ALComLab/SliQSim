@@ -212,7 +212,7 @@ void Simulator::measurement()
     int nAnci_oneInt = ceil(log(r) / log(2)), nAnci_fourInt = ceil(log(w) / log(2)), nAnci = nAnci_oneInt + nAnci_fourInt, nnAnci_fourInt = n + nAnci_fourInt, nVar = n + nAnci;
     DdNode *tmp1, *tmp2, *tmp3;
 
-    Cudd_AutodynDisable(manager);
+    if (isReorder) Cudd_AutodynDisable(manager);
     
     int *arrAnci_fourInt = new int[nAnci_fourInt];
     for (int i = 0; i < nAnci_fourInt; i++)

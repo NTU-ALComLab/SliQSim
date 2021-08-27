@@ -247,7 +247,7 @@ void Simulator::print_info(double runtime, size_t memPeak)
     std::cout << "  Peak memory usage: " << memPeak << " bytes" << std::endl; //unit in bytes
     std::cout << "  #Applied gates: " << gatecount << std::endl;
     std::cout << "  Max #nodes: " << NodeCount << std::endl;
-    std::cout << "  Precision of integers: " << r << std::endl;
+    std::cout << "  Integer bit size: " << r << std::endl;
     std::cout << "  Accuracy loss: " << error << std::endl;
     // std::cout << "  #Integers: " << w << std::endl;
     

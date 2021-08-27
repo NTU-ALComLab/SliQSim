@@ -25,7 +25,7 @@ void Simulator::init_simulator(int nQubits)
         measured_qubits_to_clbits[i] = -1;
     init_state(constants);
     delete[] constants;
-    Cudd_AutodynEnable(manager, CUDD_REORDER_SYMM_SIFT);
+    if (isReorder) Cudd_AutodynEnable(manager, CUDD_REORDER_SYMM_SIFT);
 }
 
 
@@ -227,7 +227,7 @@ void Simulator::sim_qasm_file(std::string qasm)
             }
         }
     }
-    Cudd_AutodynDisable(manager);
+    if (isReorder) Cudd_AutodynDisable(manager);
 }
 
 /**Function*************************************************************

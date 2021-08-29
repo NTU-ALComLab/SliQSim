@@ -24,14 +24,14 @@ class Simulator
 {
 public:
     // constructor and destructor
-    Simulator(int type, int nshots, int seed, int bitSize, bool reorder) : 
-    n(0), r(bitSize), w(4), k(0), inc(3), error(0), 
-    normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), measured_qubits(0), shots(nshots), isReorder(reorder)
+    Simulator(int type, int nshots, int seed, int bitSize, bool reorder, bool alloc) : 
+    n(0), r(bitSize), w(4), k(0), inc(3), shift(0), error(0), 
+    normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), measured_qubits(0), shots(nshots), isReorder(reorder), isAlloc(alloc)
     , sim_type(type), statevector("null"), gen(std::default_random_engine(seed)){
     }
-    Simulator(int nshots, int seed, int bitSize, bool reorder) : 
-    n(0), r(bitSize), w(4), k(0), inc(3), error(0), 
-    normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), measured_qubits(0), shots(nshots), isReorder(reorder)
+    Simulator(int nshots, int seed, int bitSize, bool reorder, bool alloc) : 
+    n(0), r(bitSize), w(4), k(0), inc(3), shift(0), error(0), 
+    normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), measured_qubits(0), shots(nshots), isReorder(reorder), isAlloc(alloc)
     , sim_type(0), statevector("null"), gen(std::default_random_engine(seed)){
     }
     ~Simulator()  { 
@@ -76,10 +76,12 @@ private:
     int w; // # of integers
     int k; // k in algebraic representation
     int inc; // add inc BDDs when overflow occurs, used in alloc_BDD
+    int shift; // # of right shifts
     int shots;
     int sim_type; // 0: statevector, 1: measure
     bool isMeasure;
     bool isReorder;
+    bool isAlloc;
     std::vector<int> measured_qubits; // i-th element is the i-th qubit measured
     int *measured_qubits_to_clbits; // -1 if not measured
     std::string measure_outcome;
@@ -102,6 +104,7 @@ private:
     /* misc */
     void init_state(int *constants);
     void alloc_BDD(DdNode ***Bdd, bool extend);
+    void dropLSB(DdNode ***Bdd);
     int overflow(DdNode *g, DdNode *h, DdNode *crin);
     void nodecount();
 

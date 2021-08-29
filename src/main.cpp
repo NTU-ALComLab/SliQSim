@@ -23,6 +23,9 @@ int main(int argc, char **argv)
     ("reorder", po::value<bool>()->default_value(1), "allow variable reordering or not.\n"
                                                              "0: disable reordering.\n"
                                                              "1: enable reordering (default option).")
+    ("alloc", po::value<bool>()->default_value(1), "allocate new BDDs when overflow is detected.\n"
+                                                    "0: do not allocate new BDDs. This may lead to numerical errors.\n"
+                                                    "1: allocate new BDDs (default option).")
     ;
     
     po::variables_map vm;
@@ -39,7 +42,7 @@ int main(int argc, char **argv)
     double elapsedTime;
 
     int type = vm["type"].as<unsigned int>(), shots = vm["shots"].as<unsigned int>(), r = vm["r"].as<unsigned int>();
-    bool isReorder = vm["reorder"].as<bool>();
+    bool isReorder = vm["reorder"].as<bool>(), isAlloc = vm["alloc"].as<bool>();
     if (type == 1)
     {
         shots = 1;
@@ -59,7 +62,7 @@ int main(int argc, char **argv)
     gettimeofday(&t1, NULL);
 
     assert(shots > 0);
-    Simulator simulator(type, shots, seed, r, isReorder);
+    Simulator simulator(type, shots, seed, r, isReorder, isAlloc);
 
     if (vm.count("sim_qasm"))
     {

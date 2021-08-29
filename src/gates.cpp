@@ -319,9 +319,16 @@ void Simulator::Hadamard(int iqubit)
             //detect overflow
             if ((j == r - 1) && !overflow_done)
                 if (overflow(g, d, c))
-                {
-                    r += inc;
-                    alloc_BDD(All_Bdd, true); // add new BDDs
+                {   if (isAlloc)
+                    {
+                        r += inc;
+                        alloc_BDD(All_Bdd, true); // add new BDDs
+                    }
+                    else
+                    {
+                        j -= 1;
+                        dropLSB(All_Bdd);
+                    }
                     overflow_done = 1;
                 }
             //sum
@@ -423,10 +430,18 @@ void Simulator::rx_pi_2(int iqubit)
             //detect overflow
             if ((j == r - 1) && !overflow_done)
                 if (overflow(copy[i][j], d, c))
-                {
-                    r += inc;
-                    alloc_BDD(All_Bdd, true); // add new BDDs
-                    alloc_BDD(copy, true);
+                {   if (isAlloc)
+                    {
+                        r += inc;
+                        alloc_BDD(All_Bdd, true); // add new BDDs
+                        alloc_BDD(copy, true);
+                    }
+                    else
+                    {
+                        j -= 1;
+                        dropLSB(All_Bdd);
+                        dropLSB(copy);
+                    }
                     overflow_done = 1;
                 }
             //sum
@@ -513,9 +528,16 @@ void Simulator::ry_pi_2(int iqubit)
             //detect overflow
             if ((j == r - 1) && !overflow_done)
                 if (overflow(g, d, c))
-                {
-                    r += inc;
-                    alloc_BDD(All_Bdd, true); // add new BDDs
+                {   if (isAlloc)
+                    {
+                        r += inc;
+                        alloc_BDD(All_Bdd, true); // add new BDDs
+                    }
+                    else
+                    {
+                        j -= 1;
+                        dropLSB(All_Bdd);
+                    }
                     overflow_done = 1;
                 }
             //sum

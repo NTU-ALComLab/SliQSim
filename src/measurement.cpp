@@ -79,9 +79,9 @@ double Simulator::measure_probability(DdNode *node, int kd2, int nVar, int nAnci
                     oneEntry = !(Cudd_IsComplement(tmp));
                     Cudd_RecursiveDeref(manager, tmp);
                     if (j == r - 1)
-                        int_value -= oneEntry * pow(2, j - kd2);
+                        int_value -= oneEntry * pow(2, j + shift - kd2);
                     else
-                        int_value += oneEntry * pow(2, j - kd2);
+                        int_value += oneEntry * pow(2, j + shift - kd2);
                     full_adder_plus_1_start(nVar, assign, n + nAnci_fourInt);
                 }
                 /* translate to re and im */
@@ -396,9 +396,9 @@ void Simulator::getStatevector()
                     oneEntry = !(Cudd_IsComplement(tmp));
                     Cudd_RecursiveDeref(manager, tmp);
                     if (h == r - 1)
-                        int_value -= oneEntry * pow(2, h);
+                        int_value -= oneEntry * pow(2, h + shift);
                     else
-                        int_value += oneEntry * pow(2, h);
+                        int_value += oneEntry * pow(2, h + shift);
                 }
                 /* translate to re and im */
                 re += int_value * cos((double) (w - j - 1)/w * PI);

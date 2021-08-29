@@ -102,6 +102,41 @@ void Simulator::alloc_BDD(DdNode ***Bdd, bool extend)
 
 /**Function*************************************************************
 
+  Synopsis    [Drop LSB and shift right by 1 bit]
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+void Simulator::dropLSB(DdNode ***Bdd)
+{
+    DdNode *tmp;
+    
+    ++shift;
+    
+    for (int i = 0; i < w; i++)
+    {
+        Cudd_RecursiveDeref(manager, Bdd[i][0]); // drop LSB
+        // right shift
+        for (int j = 1; j < r; j++)
+        {
+            Bdd[i][j - 1] = Bdd[i][j];
+        }
+        // sign extension
+        Bdd[i][r - 1] = Cudd_ReadOne(manager);
+        Cudd_Ref(Bdd[i][r - 1]);
+        tmp = Cudd_bddAnd(manager, Bdd[i][r - 2], Bdd[i][r - 1]);
+        Cudd_Ref(tmp);
+        Cudd_RecursiveDeref(manager, Bdd[i][r - 1]);
+        Bdd[i][r - 1] = tmp;
+    }
+}
+
+/**Function*************************************************************
+
   Synopsis    [detect overflow in integer vectors]
 
   Description []

@@ -43,6 +43,10 @@ Options:
 --reorder arg (=1)    allow variable reordering or not.
                       0: disable reordering.
                       1: enable reordering (default option).
+--alloc arg (=1)      allocate new BDDs when overflow is detected.
+                      0: do not allocate new BDDs. This may lead to numerical
+                      errors.
+                      1: allocate new BDDs (default option).
 ```
 For example, simulating [example/bell_state_measure.qasm](https://github.com/NTU-ALComLab/SliQSim/blob/master/examples/bell_state_measure.qasm), which is a 2-qubit bell state circuit with measurement gates at the end, with the weak simulation option can be executed by
 ```commandline

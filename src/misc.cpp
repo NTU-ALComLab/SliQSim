@@ -115,8 +115,6 @@ void Simulator::dropLSB(DdNode ***Bdd)
 {
     DdNode *tmp;
     
-    ++shift;
-    
     for (int i = 0; i < w; i++)
     {
         Cudd_RecursiveDeref(manager, Bdd[i][0]); // drop LSB

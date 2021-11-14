@@ -327,6 +327,7 @@ void Simulator::Hadamard(int iqubit)
                     else
                     {
                         j -= 1;
+                        ++shift;
                         dropLSB(All_Bdd);
                     }
                     overflow_done = 1;
@@ -439,6 +440,7 @@ void Simulator::rx_pi_2(int iqubit)
                     else
                     {
                         j -= 1;
+                        ++shift;
                         dropLSB(All_Bdd);
                         dropLSB(copy);
                     }
@@ -536,6 +538,7 @@ void Simulator::ry_pi_2(int iqubit)
                     else
                     {
                         j -= 1;
+                        ++shift;
                         dropLSB(All_Bdd);
                     }
                     overflow_done = 1;

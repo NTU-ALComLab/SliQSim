@@ -85,15 +85,17 @@ One may also execute our simulator as a backend option of Qiskit through [SliQSi
 Please cite the following paper if you use our simulator for your research:
 
 <summary>
-  <a href="https://arxiv.org/abs/2007.09304">Y. Tsai, J. R. Jiang, and C. Jhang, "Bit-Slicing the Hilbert Space: Scaling Up Accurate Quantum Circuit Simulation to a New Level," 2020, arXiv: 2007.09304</a>
+  <a href="https://ieeexplore.ieee.org/document/9586191">Y.-H. Tsai, J.-H. R. Jiang, and C.-S. Jhang, “Bit-slicing the hilbert space:  Scaling up accurate quantum circuit simulation,” in <em>Design Automation Conference (DAC)</em>, 2021, pp. 439–444.</a>
 </summary>
 
 ```bibtex
-@misc{tsai2020bitslicing,
-      title={Bit-Slicing the Hilbert Space: Scaling Up Accurate Quantum Circuit Simulation to a New Level}, 
-      author={Yuan{-}Hung Tsai and Jie{-}Hong R. Jiang and Chiao{-}Shan Jhang},
-      year={2020},
-      note={arXiv: 2007.09304}
+@INPROCEEDINGS{9586191,
+  author={Tsai, Yuan-Hung and Jiang, Jie-Hong R. and Jhang, Chiao-Shan},
+  booktitle={Design Automation Conference (DAC)}, 
+  title={Bit-Slicing the Hilbert Space: Scaling Up Accurate Quantum Circuit Simulation}, 
+  year={2021},
+  pages={439-444},
+  doi={10.1109/DAC18074.2021.9586191}
 }
 ```
 

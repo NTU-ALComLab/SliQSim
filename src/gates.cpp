@@ -952,7 +952,7 @@ void Simulator::PauliZ(std::vector<int> iqubit)
                 All_Bdd[i][j] = Cudd_bddXor(manager, inter, c);
                 Cudd_Ref(All_Bdd[i][j]);
                 /*carry*/
-                if (i == r - 1)
+                if (j == r - 1)
                     Cudd_RecursiveDeref(manager, inter);
                 else
                 {

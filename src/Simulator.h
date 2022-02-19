@@ -24,17 +24,17 @@ class Simulator
 {
 public:
     // constructor and destructor
-    Simulator(int type, int nshots, int seed, int bitSize, bool reorder, bool alloc) : 
-    n(0), r(bitSize), w(4), k(0), inc(3), shift(0), error(0), 
+    Simulator(int type, int nshots, int seed, int bitSize, bool reorder, bool alloc) :
+    n(0), r(bitSize), w(4), k(0), inc(3), shift(0), error(0),
     normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), measured_qubits(0), shots(nshots), isReorder(reorder), isAlloc(alloc)
     , sim_type(type), statevector("null"), gen(std::default_random_engine(seed)){
     }
-    Simulator(int nshots, int seed, int bitSize, bool reorder, bool alloc) : 
-    n(0), r(bitSize), w(4), k(0), inc(3), shift(0), error(0), 
+    Simulator(int nshots, int seed, int bitSize, bool reorder, bool alloc) :
+    n(0), r(bitSize), w(4), k(0), inc(3), shift(0), error(0),
     normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), measured_qubits(0), shots(nshots), isReorder(reorder), isAlloc(alloc)
     , sim_type(0), statevector("null"), gen(std::default_random_engine(seed)){
     }
-    ~Simulator()  { 
+    ~Simulator()  {
         clear();
     }
 
@@ -44,7 +44,7 @@ public:
     void Peres(int a, int b, int c);
     void Peres_i(int a, int b, int c);
     void Hadamard(int iqubit);
-    void rx_pi_2(int iqubit); 
+    void rx_pi_2(int iqubit);
     void ry_pi_2(int iqubit);
     void Phase_shift(int phase, int iqubit); // phase can only be 2 to the power of an integer
     void Phase_shift_dagger(int phase, int iqubit);
@@ -106,6 +106,7 @@ private:
     void alloc_BDD(DdNode ***Bdd, bool extend);
     void dropLSB(DdNode ***Bdd);
     int overflow(DdNode *g, DdNode *h, DdNode *crin);
+    int overflow_special(DdNode *g, DdNode *crin);
     void nodecount();
 
     // Clean up Simulator

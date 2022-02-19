@@ -144,7 +144,7 @@ void Simulator::dropLSB(DdNode ***Bdd)
   SeeAlso     []
 
 ***********************************************************************/
-int Simulator::overflow(DdNode *g, DdNode *h, DdNode *crin)
+int Simulator::overflow3(DdNode *g, DdNode *h, DdNode *crin)
 {
     DdNode *tmp, *dd1, *dd2;
     int overflow;
@@ -180,7 +180,7 @@ int Simulator::overflow(DdNode *g, DdNode *h, DdNode *crin)
   SeeAlso     []
 
 ***********************************************************************/
-int Simulator::overflow_special(DdNode *g, DdNode *crin){
+int Simulator::overflow2(DdNode *g, DdNode *crin){
     DdNode *tmp;
     int overflow;
 

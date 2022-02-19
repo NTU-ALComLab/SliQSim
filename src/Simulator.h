@@ -105,8 +105,8 @@ private:
     void init_state(int *constants);
     void alloc_BDD(DdNode ***Bdd, bool extend);
     void dropLSB(DdNode ***Bdd);
-    int overflow(DdNode *g, DdNode *h, DdNode *crin);
-    int overflow_special(DdNode *g, DdNode *crin);
+    int overflow3(DdNode *g, DdNode *h, DdNode *crin);
+    int overflow2(DdNode *g, DdNode *crin);
     void nodecount();
 
     // Clean up Simulator

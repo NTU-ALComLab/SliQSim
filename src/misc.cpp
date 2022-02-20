@@ -7,7 +7,7 @@
   Synopsis    [initialize state vector by a basis state]
 
   Description []
-               
+
   SideEffects []
 
   SeeAlso     []
@@ -59,7 +59,7 @@ void Simulator::init_state(int *constants)
   Synopsis    [allocate new BDDs for each integer vector]
 
   Description []
-               
+
   SideEffects []
 
   SeeAlso     []
@@ -68,7 +68,7 @@ void Simulator::init_state(int *constants)
 void Simulator::alloc_BDD(DdNode ***Bdd, bool extend)
 {
     DdNode *tmp;
-    
+
     DdNode ***W = new DdNode **[w];
     for (int i = 0; i < w; i++)
         W[i] = new DdNode *[r];
@@ -79,7 +79,7 @@ void Simulator::alloc_BDD(DdNode ***Bdd, bool extend)
 
     for (int i = 0; i < w; i++)
         delete[] Bdd[i];
-    
+
     for (int i = 0; i < w; i++)
         Bdd[i] = W[i];
 
@@ -105,7 +105,7 @@ void Simulator::alloc_BDD(DdNode ***Bdd, bool extend)
   Synopsis    [Drop LSB and shift right by 1 bit]
 
   Description []
-               
+
   SideEffects []
 
   SeeAlso     []
@@ -114,7 +114,7 @@ void Simulator::alloc_BDD(DdNode ***Bdd, bool extend)
 void Simulator::dropLSB(DdNode ***Bdd)
 {
     DdNode *tmp;
-    
+
     for (int i = 0; i < w; i++)
     {
         Cudd_RecursiveDeref(manager, Bdd[i][0]); // drop LSB
@@ -138,13 +138,13 @@ void Simulator::dropLSB(DdNode ***Bdd)
   Synopsis    [detect overflow in integer vectors]
 
   Description []
-               
+
   SideEffects []
 
   SeeAlso     []
 
 ***********************************************************************/
-int Simulator::overflow(DdNode *g, DdNode *h, DdNode *crin)
+int Simulator::overflow3(DdNode *g, DdNode *h, DdNode *crin)
 {
     DdNode *tmp, *dd1, *dd2;
     int overflow;
@@ -171,10 +171,37 @@ int Simulator::overflow(DdNode *g, DdNode *h, DdNode *crin)
 
 /**Function*************************************************************
 
+  Synopsis    [detect overflow in integer vectors -- for the case that h is 0]
+
+  Description []
+
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+int Simulator::overflow2(DdNode *g, DdNode *crin){
+    DdNode *tmp;
+    int overflow;
+
+    tmp = Cudd_bddAnd(manager, Cudd_Not(g), crin);
+    Cudd_Ref(tmp);
+
+    if (Cudd_CountPathsToNonZero(tmp))
+        overflow = 1;
+    else
+        overflow = 0;
+    Cudd_RecursiveDeref(manager, tmp);
+
+    return overflow;
+}
+
+/**Function*************************************************************
+
   Synopsis    [decode and print each entry of the state vector]
 
   Description []
-               
+
   SideEffects []
 
   SeeAlso     []
@@ -232,7 +259,7 @@ void Simulator::decode_entries()
   Synopsis    [reorder BDDs]
 
   Description []
-               
+
   SideEffects []
 
   SeeAlso     []
@@ -250,7 +277,7 @@ void Simulator::reorder()
   Synopsis    [update max #nodes]
 
   Description []
-               
+
   SideEffects []
 
   SeeAlso     []
@@ -268,7 +295,7 @@ void Simulator::nodecount()
   Synopsis    [print statistics]
 
   Description []
-               
+
   SideEffects []
 
   SeeAlso     []
@@ -283,7 +310,7 @@ void Simulator::print_info(double runtime, size_t memPeak)
     std::cout << "  Integer bit size: " << r << std::endl;
     std::cout << "  Accuracy loss: " << error << std::endl;
     // std::cout << "  #Integers: " << w << std::endl;
-    
+
     // std::unordered_map<std::string, int>::iterator it;
     // std::cout << "  Measurement: " << std::endl;
     // for(it = state_count.begin(); it != state_count.end(); it++)

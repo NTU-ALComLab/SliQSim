@@ -644,6 +644,7 @@ void Simulator::Phase_shift(int phase, int iqubit)
                             j -= 1;
                             ++shift;
                             dropLSB(All_Bdd);
+                            dropLSB(copy);
                         }
                         overflow_done = 1;
                     }
@@ -762,6 +763,7 @@ void Simulator::Phase_shift_dagger(int phase, int iqubit)
                             j -= 1;
                             ++shift;
                             dropLSB(All_Bdd);
+                            dropLSB(copy);
                         }
                         overflow_done = 1;
                     }
@@ -930,6 +932,7 @@ void Simulator::PauliY(int iqubit)
                         j -= 1;
                         ++shift;
                         dropLSB(All_Bdd);
+                        dropLSB(copy);
                     }
                     overflow_done = 1;
                 }

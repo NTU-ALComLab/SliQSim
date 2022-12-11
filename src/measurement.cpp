@@ -1,5 +1,6 @@
 #include "Simulator.h"
 #include "util_sim.h"
+#include <gmpxx.h>
 
 /**Function*************************************************************
 
@@ -355,24 +356,62 @@ void Simulator::measurement()
 ***********************************************************************/
 void Simulator::getStatevector()
 {
-    double oneroot2 = 1 / sqrt(2);
-    double H_factor = pow(oneroot2, k);
-    double re = 0, im = 0;
+    mpf_t one_over_sqrt_2;        
+    mpf_init(one_over_sqrt_2);
+    mpf_sqrt_ui(one_over_sqrt_2, 2);
+    mpf_div_ui(one_over_sqrt_2, one_over_sqrt_2, 2);
+    // sqrt_val = 1/sqrt(2)
+    
+    mpz_t int_value;
+    mpz_init(int_value);    
+    mpf_t int_value_as_float;
+    mpf_init(int_value_as_float);
+    
+    mpf_t re, im;
+    mpf_init(re);
+    mpf_init(im);
+    
+    mpf_t cos_val;
+    mpf_init(cos_val);
+    mpf_t sin_val;
+    mpf_init(sin_val);    
+    
+    mpz_t tmp_int;
+    mpz_init(tmp_int);
+    mpf_t tmp_float;
+    mpf_init(tmp_float);
+    
+    std::string bitstring;
+    
+    mpz_t two;
+    mpz_init(two);
+    mpz_set_str(two, "2", 10);
+    mpf_t H_factor;
+    mpf_init(H_factor);
+    mpz_pow_ui(tmp_int, two, k / 2);
+    mpf_set_z(H_factor, tmp_int);    
+    if (k % 2 == 1)
+        mpf_div(H_factor, H_factor, one_over_sqrt_2);
+    
+    long double final_re = 0;
+    long double final_im = 0;
+    
     int *assign = new int[n];
-    unsigned long long nEntries = pow(2, n);
+    unsigned long long nEntries = pow(2, n);      // should timeout before overflow occurs in "nEntries"
     int oneEntry;
-    long long int_value = 0;
     DdNode *tmp;
-
-    for (int i = 0; i < n; i++) //initialize assignment
+    
+    for (int i = 0; i < n; i++)                   //initialize assignment
         assign[i] = 0;
 
     statevector = "[";
-
+    
     for (unsigned long long i = 0; i < nEntries; i++) // compute every entry
     {
-        re = 0;
-        im = 0;
+        final_re = 0;
+        final_im = 0;
+        mpf_init(re);
+        mpf_init(im);
         bool isZero = 0;
         for (int j = 0; j < n; j++)
         {
@@ -388,38 +427,96 @@ void Simulator::getStatevector()
         {
             for (int j = 0; j < w; j++) // compute every complex value
             {
-                int_value = 0;
+                bitstring = "";
+                
+                mpz_init(int_value);
                 for (int h = 0; h < r; h++) // compute every integer
                 {
                     tmp = Cudd_Eval(manager, All_Bdd[j][h], assign);
                     Cudd_Ref(tmp);
                     oneEntry = !(Cudd_IsComplement(tmp));
                     Cudd_RecursiveDeref(manager, tmp);
-                    if (h == r - 1)
-                        int_value -= oneEntry * pow(2, h + shift);
+                    if (Cudd_IsComplement(tmp))
+                    {
+                        bitstring += "0";
+                    }
                     else
-                        int_value += oneEntry * pow(2, h + shift);
+                    {
+                        bitstring += "1";
+                    }
+                    
                 }
-                /* translate to re and im */
-                re += int_value * cos((double) (w - j - 1)/w * PI);
-                im += int_value * sin((double) (w - j - 1)/w * PI);
+                std::reverse(bitstring.begin(), bitstring.end());
+                bool isNeg = (bitstring[0]=='1');
+                if (isNeg)
+                {
+                    std::string inv_str = "1";
+                    for (int digitIndex = 1; digitIndex < r; digitIndex++)
+                    {
+                        inv_str += "0";
+                    }
+                    mpz_t raw_data;
+                    mpz_init_set_str(raw_data, bitstring.c_str(), 2);
+                    mpz_t inverter;
+                    mpz_init_set_str(inverter, inv_str.c_str(), 2);
+                    
+                    mpz_sub(int_value, raw_data, inverter);
+                }
+                else
+                {
+                    mpz_set_str(int_value, bitstring.c_str(), 2);
+                }
+                
+                switch (j)
+                {
+                case 3:
+                    mpf_set_d(cos_val, 1);
+                    mpf_set_d(sin_val, 0);
+                    break;
+                case 2:
+                    mpf_set(cos_val, one_over_sqrt_2);
+                    mpf_set(sin_val, one_over_sqrt_2);
+                    break;
+                case 1:
+                    mpf_set_d(cos_val, 0);
+                    mpf_set_d(sin_val, 1);
+                    break;
+                case 0:
+                    mpf_neg(cos_val, one_over_sqrt_2); // -sqrt(2)/2
+                    mpf_set(sin_val, one_over_sqrt_2);
+                    break;
+                default:
+                    std::cerr << "Warning: Unknown index (" << j << ")\n";
+                    break;
+                }
+                                
+                mpf_set_z(int_value_as_float, int_value);
+                
+                mpf_mul(tmp_float, int_value_as_float, cos_val);
+                mpf_add(re, re, tmp_float);
+                mpf_mul(tmp_float, int_value_as_float, sin_val);
+                mpf_add(im, im, tmp_float);
+                // translate to re and im
             }
-            re *= H_factor*normalize_factor;
-            im *= H_factor*normalize_factor;
+            
+            mpf_div(tmp_float, re, H_factor);            
+            final_re = mpf_get_d(tmp_float) * normalize_factor;
+            mpf_div(tmp_float, im, H_factor);
+            final_im = mpf_get_d(tmp_float) * normalize_factor;
         }
 
-        if ((re == 0)&&(im == 0))
+        if ((final_re == 0)&&(final_im == 0))
             statevector = statevector + "\"0\"";
-        else if (re == 0)
-            statevector = statevector + "\"" + std::to_string(im) + "i\"";
-        else if (im == 0)
-            statevector = statevector + "\"" + std::to_string(re) + "\"";
+        else if (final_re == 0)
+            statevector = statevector + "\"" + std::to_string(final_im) + "i\"";
+        else if (final_im == 0)
+            statevector = statevector + "\"" + std::to_string(final_re) + "\"";
         else
         {
-            if (im < 0)
-                statevector = statevector + "\"" + std::to_string(re) + std::to_string(im) + "i\"";
+            if (final_im < 0)
+                statevector = statevector + "\"" + std::to_string(final_re) + std::to_string(final_im) + "i\"";
             else
-                statevector = statevector + "\"" + std::to_string(re) + "+" + std::to_string(im) + "i\"";
+                statevector = statevector + "\"" + std::to_string(final_re) + "+" + std::to_string(final_im) + "i\"";
         }
         if (i != nEntries - 1)
             statevector = statevector + ", ";

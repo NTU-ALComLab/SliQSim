@@ -451,7 +451,7 @@ void Simulator::getStatevector()
                 if (isNeg)
                 {
                     std::string inv_str = "1";
-                    for (int digitIndex = 1; digitIndex < r; digitIndex++)
+                    for (int digitIndex = 0; digitIndex < r; digitIndex++)
                     {
                         inv_str += "0";
                     }

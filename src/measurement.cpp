@@ -120,13 +120,12 @@ double Simulator::measure_probability(DdNode *node, int kd2, int nVar, int nAnci
   SeeAlso     []
 
 ***********************************************************************/
-void Simulator::measure_one(int position, int kd2, double H_factor, int nVar, int nAnci_fourInt, std::string *outcome)
+void Simulator::measure_one(int index, int kd2, double H_factor, int nVar, int nAnci_fourInt, std::string *outcome)
 {
-    int index = Cudd_ReadInvPerm(manager, position);
     int comple;
     int noNode_f = 0; //flag: 1 if the node we want to measure is reduced
     std::uniform_real_distribution<double> dis(0.0, 1.0);
-	double p0, p1, p;
+	  double p0, p1, p;
     double rand_num;
     double epsilon = 0.001;
     DdNode *node, *tmp;
@@ -285,11 +284,17 @@ void Simulator::measurement()
     // move measured qubits to the top
     int *permutation = new int[nVar];
     int indCount1 = 0;
-    int indCount0 = measured_qubits.size();
+    int indCount0 = 0;  // number of measured qubits
+    for (int i = 0; i < n; i++){
+        if (!measured_qubits_to_clbits[i].empty())
+        {
+            indCount0++;
+        }
+    }
     for (int i = 0; i < n; i++)
     {
         int index = Cudd_ReadInvPerm(manager, i);
-        if (measured_qubits_to_clbits[index] != -1)
+        if (!measured_qubits_to_clbits[index].empty())
         {
             permutation[indCount1] = index;
             indCount1++;
@@ -313,19 +318,29 @@ void Simulator::measurement()
         for (int j = 0; j < n; j++)
         {
             measure_outcome_qubits += '0';
+        }
+        for (int j = 0; j < nClbits; j++) 
+        {
             measure_outcome_clbits += '0';
         }
         normalize_factor = 1;
 
-        for (int j = 0; j < measured_qubits.size(); j++)
-            measure_one(j, k/2, H_factor, nVar, nAnci_fourInt, &measure_outcome_qubits);
-
-        // convert measurement outcome of qubits to clbits
-        for (int j = 0; j < measured_qubits.size(); j++)
+        for (int j = 0; j < n; j++)
         {
-            int qIndex = measured_qubits[j];
-            int cIndex = measured_qubits_to_clbits[qIndex];
-            measure_outcome_clbits[n - 1 - cIndex] = measure_outcome_qubits[n - 1 - qIndex];
+            if (!measured_qubits_to_clbits[j].empty())
+            {
+                measure_one(j, k/2, H_factor, nVar, nAnci_fourInt, &measure_outcome_qubits);            
+            }
+        }
+        
+        // convert measurement outcome of qubits to clbits
+        for (int qIndex = 0; qIndex < n; qIndex++)
+        {
+            for (int cIndex : measured_qubits_to_clbits[qIndex])
+            {
+                measure_outcome_clbits[nClbits - 1 - cIndex] = measure_outcome_qubits[n - 1 - qIndex];
+                // the order is reversed
+            }
         }
         it = state_count.find(measure_outcome_clbits);
         if (it != state_count.end())
@@ -415,7 +430,7 @@ void Simulator::getStatevector()
         bool isZero = 0;
         for (int j = 0; j < n; j++)
         {
-            if (measured_qubits_to_clbits[j] != -1)
+            if (!measured_qubits_to_clbits[j].empty())
                 if (assign[j] != stoi(measure_outcome.substr(n - 1 - j, 1)))
                 {
                     isZero = 1;

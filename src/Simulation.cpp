@@ -20,9 +20,7 @@ void Simulator::init_simulator(int nQubits)
     int *constants = new int[n];
     for (int i = 0; i < n; i++)
         constants[i] = 0; // TODO: costom initial state
-    measured_qubits_to_clbits = new int[n];
-    for (int i = 0; i < n; i++)
-        measured_qubits_to_clbits[i] = -1;
+    measured_qubits_to_clbits = std::vector<std::vector<int>>(n, std::vector<int>(0));
     init_state(constants);
     delete[] constants;
     if (isReorder) Cudd_AutodynEnable(manager, CUDD_REORDER_SYMM_SIFT);
@@ -57,7 +55,12 @@ void Simulator::sim_qasm_file(std::string qasm)
                 getline(inStr_ss, inStr, ']');
                 init_simulator(stoi(inStr));
             }
-            else if (inStr == "creg"){;}
+            else if (inStr == "creg")
+            {
+                getline(inStr_ss, inStr, '[');
+                getline(inStr_ss, inStr, ']');
+                nClbits = stoi(inStr);                
+            }
             else if (inStr == "OPENQASM"){;}
             else if (inStr == "include"){;}
             else if (inStr == "measure")
@@ -244,31 +247,43 @@ void Simulator::sim_qasm_file(std::string qasm)
 void Simulator::sim_qasm(std::string qasm)
 {
     sim_qasm_file(qasm); // simulate
+    
+    if (sim_type == 0 && isMeasure == 0)
+    {
+        std::cout << "Error: no measurement detected. Cannot do sampling.\n" << std::flush;
+        assert(sim_type != 0 || isMeasure != 0);
+    }
+    if (sim_type == 1)
+    {
+        if (isMeasure == 1)
+        {
+            std::cout << "Warning: measurement detected. The final statevector will collapse based on the measurement outcome.\n" << std::flush;
+            if (shots != 1)
+            {
+                shots = 1;
+                std::cout << "Warning: shot number is limited to 1 in all_amplitude mode.\n" << std::flush;
+            }
+        }    
+        else 
+        {
+            if (shots != 1)
+            {
+                std::cout << "Warning: no measurement detected. The --shots argument is ignored.\n" << std::flush;
+            }
+        }  
+    }
 
     // measure based on simulator type
-    if (sim_type == 0) // weak
+    if (sim_type == 0) // sampling mode
     {
-        if (isMeasure == 0)
-        {
-            std::string noMeasureBasis;
-            for (int i = 0; i < n; i++)
-                noMeasureBasis += '0';
-            state_count[noMeasureBasis] = shots;
-        }
-        else
-            measurement();
+        measurement();
     }
-    else if (sim_type == 1) // strong
+    else if (sim_type == 1) // all_amplitude mode
     {
-        if (isMeasure == 0)
+        if (isMeasure == 1)
         {
-            std::string noMeasureBasis;
-            for (int i = 0; i < n; i++)
-                noMeasureBasis += '0';
-            state_count[noMeasureBasis] = 1;
-        }
-        else
             measurement();
+        }
         getStatevector();
     }
     print_results();
@@ -291,17 +306,22 @@ void Simulator::print_results()
 {
     // write output string based on state_count and statevector
     std::unordered_map<std::string, int>::iterator it;
+    
+    run_output = "{";
+    if (state_count.begin() != state_count.end()){
+        run_output += "\"counts\": { ";
+        for (it = state_count.begin(); it != state_count.end(); it++)
+        {
+            if (std::next(it) == state_count.end())
+                run_output = run_output + "\"" + it->first + "\": " + std::to_string(it->second);
+            else
+                run_output = run_output + "\"" + it->first + "\": " + std::to_string(it->second) + ", ";
+        }
+        run_output += " }";
+        run_output += (statevector != "null") ? ", " : ""; 
+    }    
 
-    run_output = "{ \"counts\": { ";
-    for (it = state_count.begin(); it != state_count.end(); it++)
-    {
-        if (std::next(it) == state_count.end())
-            run_output = run_output + "\"" + it->first + "\": " + std::to_string(it->second);
-        else
-            run_output = run_output + "\"" + it->first + "\": " + std::to_string(it->second) + ", ";
-    }
-    run_output = run_output + " }";
-    run_output += (statevector != "null") ? ", \"statevector\": " + statevector + " }" : " }";
-
+    run_output += (statevector != "null") ? "\"statevector\": " + statevector + " }" : " }";
+    //return;
     std::cout << run_output << std::endl;
 }

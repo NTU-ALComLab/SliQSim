@@ -12,13 +12,9 @@ int main(int argc, char **argv)
     ("seed", po::value<unsigned int>()->implicit_value(1), "seed for random number generator")
     ("print_info", "print simulation statistics such as runtime, memory, etc.")
     ("type", po::value<unsigned int>()->default_value(0), "the simulation type being executed.\n" 
-                                                           "0: weak simulation (default option) where the sampled outcome(s) will be provided after the simulation. " 
-                                                           "The number of outcomes being sampled can be set by argument \"shots\" (1 by default).\n"
-                                                           "1: strong simulation where the resulting state vector will be shown after the simulation. "
-                                                           "Note that this option should be avoided if the number of qubits is large since it will result in extremely long runtime.")
-    ("shots", po::value<unsigned int>()->default_value(1), "the number of outcomes being sampled, " 
-                                                          "this argument is only used when the " 
-                                                          "simulation type is set to \"weak\".")
+                                                           "0: sampling mode (default option), where the sampled outcomes will be provided. \n"
+                                                           "1: all_amplitude mode, where the final state vector will be shown. ")
+    ("shots", po::value<unsigned int>()->default_value(1), "the number of outcomes being sampled in \"sampling mode\". " )
     ("r", po::value<unsigned int>()->default_value(32), "integer bit size.")
     ("reorder", po::value<bool>()->default_value(1), "allow variable reordering or not.\n"
                                                              "0: disable reordering.\n"
@@ -43,14 +39,7 @@ int main(int argc, char **argv)
 
     int type = vm["type"].as<unsigned int>(), shots = vm["shots"].as<unsigned int>(), r = vm["r"].as<unsigned int>();
     bool isReorder = vm["reorder"].as<bool>(), isAlloc = vm["alloc"].as<bool>();
-    if (type == 1)
-    {
-        shots = 1;
-    }
-    else
-    {
-        type = 0;
-    }
+
     std::random_device rd;
     unsigned int seed;
     if (vm.count("seed")) 

@@ -830,6 +830,13 @@ void Simulator::PauliX(int iqubit)
     {
         for (int j = 0; j < r; j++)
         {
+            /*
+            tmp = Cudd_bddCompose(manager,  All_Bdd[i][j], Cudd_Not(Cudd_bddIthVar(manager, iqubit)), iqubit);
+            Cudd_Ref(tmp);            
+            
+            Cudd_RecursiveDeref(manager, All_Bdd[i][j]);
+            All_Bdd[i][j] = tmp;*/
+            
             //term1
             term1 = Cudd_Cofactor(manager, All_Bdd[i][j], Cudd_Not(Cudd_bddIthVar(manager, iqubit)));
             Cudd_Ref(term1);
@@ -1066,6 +1073,6 @@ void Simulator::PauliZ(std::vector<int> iqubit)
 
 void Simulator::measure(int qreg, int creg)
 {
-    measured_qubits.push_back(qreg);
-    measured_qubits_to_clbits[qreg] = creg;
+    assert(creg < nClbits);
+    measured_qubits_to_clbits[qreg].push_back(creg);
 }

@@ -26,12 +26,12 @@ public:
     // constructor and destructor
     Simulator(int type, int nshots, int seed, int bitSize, bool reorder, bool alloc) :
     n(0), r(bitSize), w(4), k(0), inc(3), shift(0), error(0),
-    normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), measured_qubits(0), shots(nshots), isReorder(reorder), isAlloc(alloc)
+    normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), shots(nshots), isReorder(reorder), isAlloc(alloc)
     , sim_type(type), statevector("null"), gen(std::default_random_engine(seed)){
     }
     Simulator(int nshots, int seed, int bitSize, bool reorder, bool alloc) :
     n(0), r(bitSize), w(4), k(0), inc(3), shift(0), error(0),
-    normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), measured_qubits(0), shots(nshots), isReorder(reorder), isAlloc(alloc)
+    normalize_factor(1), gatecount(0), NodeCount(0), isMeasure(0), shots(nshots), isReorder(reorder), isAlloc(alloc)
     , sim_type(0), statevector("null"), gen(std::default_random_engine(seed)){
     }
     ~Simulator()  {
@@ -82,8 +82,8 @@ private:
     bool isMeasure;
     bool isReorder;
     bool isAlloc;
-    std::vector<int> measured_qubits; // i-th element is the i-th qubit measured
-    int *measured_qubits_to_clbits; // -1 if not measured
+    int nClbits;
+    std::vector<std::vector<int>> measured_qubits_to_clbits; // empty if not measured
     std::string measure_outcome;
     double normalize_factor; // normalization factor used in measurement
     DdNode *bigBDD; // big BDD used if measurement
@@ -117,8 +117,7 @@ private:
         for (int i = 0; i < w; i++)
             delete[] All_Bdd[i];
         delete [] All_Bdd;
-        delete [] measured_qubits_to_clbits;
-        measured_qubits.clear();
+        measured_qubits_to_clbits.clear();
         measure_outcome.clear();
         Node_Table.clear();
         state_count.clear();

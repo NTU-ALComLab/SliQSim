@@ -1016,7 +1016,6 @@ void Simulator::PauliZ(std::vector<int> iqubit)
             Cudd_Ref(term1);
             term2 = Cudd_Not(All_Bdd[i][j]);
             Cudd_Ref(term2);
-            Cudd_RecursiveDeref(manager, All_Bdd[i][j]);
             tmp = Cudd_bddAnd(manager, term2, qubit_and);
             Cudd_Ref(tmp);
             Cudd_RecursiveDeref(manager, term2);
@@ -1043,6 +1042,7 @@ void Simulator::PauliZ(std::vector<int> iqubit)
                     overflow_done = 1;
                 }
 
+            Cudd_RecursiveDeref(manager, All_Bdd[i][j]);
             /* plus 1*/
             if (Cudd_IsConstant(c))
                 All_Bdd[i][j] = inter;

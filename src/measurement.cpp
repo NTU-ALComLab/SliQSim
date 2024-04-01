@@ -326,12 +326,9 @@ void Simulator::measurement()
         }
         normalize_factor = 1;
 
-        for (int j = 0; j < n; j++)
+        for (int j = 0; j < indCount1; j++)  // measure for the (top) j^th level variable
         {
-            if (!measured_qubits_to_clbits[j].empty())
-            {
-                measure_one(j, k/2, H_factor, nVar, nAnci_fourInt, &measure_outcome_qubits);            
-            }
+            measure_one(j, k/2, H_factor, nVar, nAnci_fourInt, &measure_outcome_qubits);            
         }
         
         // convert measurement outcome of qubits to clbits

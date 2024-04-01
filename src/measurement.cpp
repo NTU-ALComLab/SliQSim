@@ -120,8 +120,9 @@ double Simulator::measure_probability(DdNode *node, int kd2, int nVar, int nAnci
   SeeAlso     []
 
 ***********************************************************************/
-void Simulator::measure_one(int index, int kd2, double H_factor, int nVar, int nAnci_fourInt, std::string *outcome)
+void Simulator::measure_one(int position, int kd2, double H_factor, int nVar, int nAnci_fourInt, std::string *outcome)
 {
+    int index = Cudd_ReadInvPerm(manager, position);
     int comple;
     int noNode_f = 0; //flag: 1 if the node we want to measure is reduced
     std::uniform_real_distribution<double> dis(0.0, 1.0);

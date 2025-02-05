@@ -45,8 +45,8 @@ void Simulator::sim_qasm_file(std::string qasm)
     while (getline(inFile_ss, inStr))
     {
         inStr = inStr.substr(0, inStr.find("//"));
-        if (inStr.find_first_not_of("\t\n ") != std::string::npos)
-        {
+        if (inStr.find_first_not_of("\t\n\r ") != std::string::npos)
+        {        
             std::stringstream inStr_ss(inStr);
             getline(inStr_ss, inStr, ' ');
             if (inStr == "qreg")
@@ -247,28 +247,28 @@ void Simulator::sim_qasm_file(std::string qasm)
 void Simulator::sim_qasm(std::string qasm)
 {
     sim_qasm_file(qasm); // simulate
-    
+
     if (sim_type == 0 && isMeasure == 0)
     {
-        std::cout << "Error: no measurement detected. Cannot do sampling.\n" << std::flush;
+        std::cerr << "[Error]: no measurement detected. Cannot do sampling." << std::endl;
         assert(sim_type != 0 || isMeasure != 0);
     }
     if (sim_type == 1)
     {
         if (isMeasure == 1)
         {
-            std::cout << "Warning: measurement detected. The final statevector will collapse based on the measurement outcome.\n" << std::flush;
+            std::cerr << "[Warning]: measurement detected. The final statevector will collapse based on the measurement outcome." << std::endl;
             if (shots != 1)
             {
                 shots = 1;
-                std::cout << "Warning: shot number is limited to 1 in all_amplitude mode.\n" << std::flush;
+                std::cerr << "[Warning]: shot number is limited to 1 in all_amplitude mode." << std::endl;
             }
         }    
         else 
         {
             if (shots != 1)
             {
-                std::cout << "Warning: no measurement detected. The --shots argument is ignored.\n" << std::flush;
+                std::cerr << "[Warning]: no measurement detected. The --shots argument is ignored." << std::endl;
             }
         }  
     }
@@ -276,17 +276,33 @@ void Simulator::sim_qasm(std::string qasm)
     // measure based on simulator type
     if (sim_type == 0) // sampling mode
     {
+        create_bigBDD();
         measurement();
+        print_results();
     }
     else if (sim_type == 1) // all_amplitude mode
     {
-        if (isMeasure == 1)
+        if (isMeasure)
         {
+            create_bigBDD();
             measurement();
         }
+        else if (isQuery)
+        {
+            create_bigBDD();
+        }
         getStatevector();
+        print_results();
     }
-    print_results();
+    else if (sim_type == 2)
+    {
+        create_bigBDD();
+    }
+    else
+    {
+        std::cerr << "[Error]: unknown sim_type." << std::endl;
+        exit(-1);
+    }
 }
 
 

@@ -316,3 +316,247 @@ void Simulator::print_info(double runtime, size_t memPeak)
     // for(it = state_count.begin(); it != state_count.end(); it++)
     //     std::cout << "      " << it->first << ": " << it->second << std::endl;
 }
+
+/**Function*************************************************************
+
+  Synopsis    [parse an infix Boolean function to postfix]
+
+  Description [use shunting yard algorithm]
+
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+std::vector<std::string> Simulator::boolean_parser(std::string& inStr)
+{
+    inStr = std::regex_replace(inStr, std::regex("!"), " not ");
+    inStr = std::regex_replace(inStr, std::regex("~"), " not ");
+    inStr = std::regex_replace(inStr, std::regex("\\*"), " and ");
+    inStr = std::regex_replace(inStr, std::regex("&"), " and ");
+    inStr = std::regex_replace(inStr, std::regex("\\+"), " or ");
+    inStr = std::regex_replace(inStr, std::regex("\\|"), " or ");
+    inStr = std::regex_replace(inStr, std::regex("\\^"), " xor ");
+    inStr = std::regex_replace(inStr, std::regex("\\("), " ( ");
+    inStr = std::regex_replace(inStr, std::regex("\\)"), " ) ");
+    
+    std::vector<std::string> result;
+    std::map<std::string, int> operator_priority = { {"not", 4},
+                                                     {"xor", 3},
+                                                     {"and", 2},
+                                                     {"or",  1}, };
+        
+    std::stringstream inStr_ss(inStr);
+    std::stack<std::string> waiting_operators;
+    int nLeftTuple = 0;
+    while(getline(inStr_ss, inStr, ' '))
+    {
+        if (inStr == "") continue;
+                
+        if (inStr == "(")
+        {
+            waiting_operators.push(inStr);
+            nLeftTuple++;
+        }
+        else if (inStr == ")")
+        {
+            assert(nLeftTuple > 0);
+            while (waiting_operators.top() != "(") 
+            {
+                result.emplace_back(waiting_operators.top());
+                waiting_operators.pop();
+            }
+            waiting_operators.pop();
+            nLeftTuple--;
+        }
+        else if (operator_priority.count(inStr) != 0)
+        {
+            while (!waiting_operators.empty() && waiting_operators.top() != "(" && operator_priority[inStr] <= operator_priority[waiting_operators.top()])
+            {
+                result.emplace_back(waiting_operators.top());
+                waiting_operators.pop();
+            }
+            waiting_operators.push(inStr);
+        }
+        else if (inStr.find( "[" ) != std::string::npos) 
+        {
+            std::stringstream inStr_sss(inStr);
+            getline(inStr_sss, inStr, '[');
+            getline(inStr_sss, inStr, ']');
+            assert(inStr != "");
+            result.emplace_back(inStr);
+        }
+        else  // self-defined variables
+        {
+            result.emplace_back(inStr);
+        }
+    }
+    assert(nLeftTuple == 0);
+    
+    while (!waiting_operators.empty())
+    {
+        result.emplace_back(waiting_operators.top());
+        waiting_operators.pop();
+    }
+    return result;
+}
+
+/**Function*************************************************************
+
+  Synopsis    [compare two node lists and return a node representing 
+               whether two node lists represents the same integers ]
+
+  Description []
+               
+  SideEffects [returned node already referenced]
+
+  SeeAlso     []
+
+***********************************************************************/
+DdNode* Simulator::node_equiv(std::vector<DdNode*>& int_1, std::vector<DdNode*>& int_2)
+{
+    DdNode* result = Cudd_ReadOne(manager);
+    Cudd_Ref(result);
+    
+    for (int i = 0; i < int_1.size(); ++i)
+    {
+        DdNode* tmp = Cudd_bddXnor(manager, int_1[i], int_2[i]);
+        Cudd_Ref(tmp);
+        DdNode* new_result = Cudd_bddAnd(manager, tmp, result);
+        Cudd_Ref(new_result);
+        Cudd_RecursiveDeref(manager, tmp);
+        Cudd_RecursiveDeref(manager, result);
+        result = new_result;
+    }
+    
+    return result;
+}
+
+/**Function*************************************************************
+
+  Synopsis    [compare two node lists and return a node representing 
+               whether the first node list represents a larger integer ]
+
+  Description []
+               
+  SideEffects [returned node already referenced]
+
+  SeeAlso     []
+
+***********************************************************************/
+DdNode* Simulator::node_larger(std::vector<DdNode*>& int_1, std::vector<DdNode*>& int_2)
+{
+    DdNode* result = Cudd_Not(Cudd_ReadOne(manager));
+    Cudd_Ref(result);
+    
+    DdNode* even = Cudd_ReadOne(manager);
+    Cudd_Ref(even);
+    
+    for (int i = 0; i < int_1.size(); ++i)
+    {
+        DdNode* tmp1 = Cudd_bddAnd(manager, int_1[i], Cudd_Not(int_2[i]));
+        Cudd_Ref(tmp1);
+        DdNode* new_larger = Cudd_bddAnd(manager, tmp1, even);
+        Cudd_Ref(new_larger);
+        DdNode* new_result = Cudd_bddOr(manager, result, new_larger);
+        Cudd_Ref(new_result);
+        Cudd_RecursiveDeref(manager, tmp1);
+        Cudd_RecursiveDeref(manager, new_larger);
+        Cudd_RecursiveDeref(manager, result);
+        result = new_result;
+        
+        DdNode* tmp2 = Cudd_bddXnor(manager, int_1[i], int_2[i]);
+        Cudd_Ref(tmp2);
+        DdNode* new_even = Cudd_bddAnd(manager, tmp2, even);
+        Cudd_Ref(new_even);
+        Cudd_RecursiveDeref(manager, tmp2);
+        Cudd_RecursiveDeref(manager, even);
+        even = new_even;
+    }
+    Cudd_RecursiveDeref(manager, even);
+    
+    return result;
+}
+
+/**Function*************************************************************
+
+  Synopsis    [build a DdNode* type from a function    ]
+
+  Description []
+
+  SideEffects [returned node already referenced]
+
+  SeeAlso     []
+
+***********************************************************************/
+
+
+DdNode* Simulator::func2node(std::vector<std::string>& func)
+{
+    assert(!func.empty());
+    
+    std::stack<DdNode*> waiting;
+    for (int i = 0; i < func.size(); ++i)
+    {
+        if (func[i] == "not")
+        {
+            assert(waiting.size() >= 1);
+            DdNode* temp = waiting.top();
+            waiting.pop();
+            
+            DdNode* new_item = Cudd_Not(temp);
+            Cudd_Ref(new_item);
+            waiting.push(new_item);
+            
+            Cudd_RecursiveDeref(manager, temp);
+        }
+        else if (func[i] == "and" || func[i] == "or" || func[i] == "xor")
+        {
+            assert(waiting.size() >= 2);
+            DdNode* temp_1 = waiting.top();
+            waiting.pop();
+            DdNode* temp_2 = waiting.top();
+            waiting.pop();
+             
+            DdNode* new_item;              
+                 if (func[i] == "and") new_item = Cudd_bddAnd(manager, temp_1, temp_2);
+            else if (func[i] == "or")  new_item = Cudd_bddOr (manager, temp_1, temp_2);
+            else if (func[i] == "xor") new_item = Cudd_bddXor(manager, temp_1, temp_2);
+            Cudd_Ref(new_item);
+            waiting.push(new_item);
+            
+            Cudd_RecursiveDeref(manager, temp_1);
+            Cudd_RecursiveDeref(manager, temp_2);
+        }
+        else
+        {
+            if (func[i].find_first_not_of( "0123456789" ) == std::string::npos) 
+            {
+                int ith_var = stoi(func[i]);
+                waiting.push(Cudd_bddIthVar(manager, ith_var));
+                Cudd_Ref(waiting.top());
+            }
+            else 
+            {
+                std::unordered_map<std::string, DdNode*>::iterator iter = defined_var.find(func[i]);
+                if (iter == defined_var.end()) 
+                {
+                    std::cerr << std::endl
+                            << "[warning]: Variable \'" << func[i] << "\' is not defined. The variable is taken as constant 0 ..." << std::endl;
+                    waiting.push(Cudd_Not(Cudd_ReadOne(manager)));
+                    Cudd_Ref(waiting.top());
+                }
+                else
+                {
+                    waiting.push(iter->second);
+                    Cudd_Ref(waiting.top());
+                }
+            }
+        }
+    }
+    assert(waiting.size() == 1);
+    DdNode *result = waiting.top();
+    waiting.pop();
+    return result;
+}

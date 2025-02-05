@@ -1,0 +1,23 @@
+assign tmp_var hweq q[0] q[2] 1;
+bf (tmp_var^q[2]) | tmp_var;
+
+hweq q[0] q[2] 1;
+hwgt q[0] q[2] q[1] 2;
+
+inteq q[0] q[1] q[2] 4;
+intneq q[0] q[1] q[2] 5;
+
+expt q[0] q[1] q[2] ZZZ;
+expt q[0] q[1] q[2] YXY;
+
+weightedsum
+ 0.75 expt q[0] q[1] q[2] ZZZ
+ 0.15 expt q[0] q[1] q[2] IZI
+-0.50 expt q[0] q[1] q[2] ZZI
+endweightedsum
+
+between 0.5 0.8;
+hwgt q[0] q[2] q[1] 2;
+
+amp 1001001010;
+dist q[0] q[1] q[2];

@@ -143,5 +143,21 @@ Please cite the following paper if you use our simulator for your research:
 }
 ```
 
+<summary>
+  <a href="https://link.springer.com/chapter/10.1007/978-3-031-90660-2_7">T.-F. Chen, and J.-H. R. Jiang, “SliQSim: A Quantum Circuit Simulator and Solver for Probability and Statistics Queries,” in <em>International Conference on Tools and Algorithms for the Construction and Analysis of Systems (TACAS)</em>, 2025, pp. 129–138</a>
+</summary>
+
+```bibtex
+@INPROCEEDINGS{chen2025sliqsim,
+  author={Chen, Tian-Fu and Jiang, Jie-Hong R.},
+  booktitle={International Conference on Tools and Algorithms for the Construction and Analysis of Systems (TACAS)}, 
+  title={SliQSim: A Quantum Circuit Simulator and Solver for Probability and Statistics Queries}, 
+  year={2025},
+  pages={129-138},
+  doi={10.1007/978-3-031-90660-2_7}
+}
+```
+
 ## Contact
+
 If you have any questions or suggestions, feel free to [create an issue](https://github.com/NTU-ALComLab/SliQSim/issues), or contact us through matthewyhtsai@gmail.com.
